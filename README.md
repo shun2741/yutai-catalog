@@ -13,6 +13,7 @@ This is a template repository for generating and publishing catalog JSON for the
 3. Commit and push
 4. Update `data/*.csv` and push
 5. Pages will publish `dist/` at https://<user>.github.io/<repo>/dist
+   - Tip: workflows are triggered by any push to `main`.
 
 ## CSV format
 
@@ -26,4 +27,3 @@ See `data/*.csv` in this template. Arrays are comma-separated.
 ## License
 
 Private/internal by default. Add a license if you plan to publish.
-
