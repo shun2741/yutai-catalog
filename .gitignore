@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.python-version
+
+# Virtual envs
+.venv/
+venv/
+
+# Env files
+.env
+.env.*
+
+# Build artifacts
+dist/
+build/
+coverage/
+
+# Logs
+*.log
+
+# Type checker / linters caches
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+
+# Editors / IDEs
+.vscode/
+.idea/
+
+# macOS / Windows
+.DS_Store
+Thumbs.db
+
