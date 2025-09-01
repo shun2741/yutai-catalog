@@ -53,6 +53,9 @@ HTML_BASE_TMPL = Template("""
     .help{color:var(--muted);font-size:12px}
     form .actions{margin-top:14px}
   </style>
+  <script>
+    function confirmDelete(){ return confirm('Are you sure you want to delete this item?'); }
+  </script>
   </head>
 <body>
   <div class="wrap">
@@ -122,6 +125,15 @@ def update_row_csv(path: Path, row_id: str, updates: Dict[str, str], fieldnames:
     return changed
 
 
+def delete_row_csv(path: Path, row_id: str, fieldnames: List[str]) -> bool:
+    rows = read_csv(path)
+    new_rows = [r for r in rows if r.get("id") != row_id]
+    if len(new_rows) == len(rows):
+        return False
+    write_csv(path, new_rows, fieldnames)
+    return True
+
+
 @app.get("/")
 def index():
     comps = read_csv(DATA / "companies.csv")
@@ -156,7 +168,19 @@ def index():
 def list_companies():
     rows = read_csv(DATA / "companies.csv")
     rows = sorted(rows, key=lambda r: r.get("id", ""))
-    head = "<div class='panel'><h2>Companies</h2><p><a class='btn' href='/companies/new'>Add company</a></p>"
+    q = (request.args.get("q") or "").strip()
+    if q:
+        qq = q.lower()
+        rows = [r for r in rows if qq in (r.get("id","")+" "+r.get("name","")+" "+r.get("ticker","")) .lower()]
+    head = (
+        "<div class='panel'><h2>Companies</h2>"
+        "<form method='get' style='margin:8px 0'>"
+        f"<input type='text' name='q' placeholder='Search id/name/ticker' value='{html.escape(q)}' style='max-width:320px'> "
+        "<button class='btn secondary' type='submit'>Search</button> "
+        "<a class='btn secondary' href='/companies'>Clear</a> "
+        "<a class='btn' href='/companies/new' style='float:right'>Add company</a>"
+        "</form>"
+    )
     if not rows:
         return page("Companies", head + "<p>No companies yet.</p></div>")
     th = "".join(
@@ -165,7 +189,11 @@ def list_companies():
     )
     trs = []
     for r in rows:
-        actions = f"<a class='btn secondary' href='/companies/{html.escape(r.get('id',''))}/edit'>Edit</a>"
+        del_form = (
+            f"<form method='post' action='/companies/{html.escape(r.get('id',''))}/delete' style='display:inline' onsubmit='return confirmDelete()'>"
+            "<button class='btn danger' type='submit'>Delete</button></form>"
+        )
+        actions = f"<a class='btn secondary' href='/companies/{html.escape(r.get('id',''))}/edit'>Edit</a> " + del_form
         cells = [r.get("id", ""), r.get("name", ""), r.get("ticker", ""), r.get("chainIds", ""), r.get("voucherTypes", ""), r.get("notes", ""), actions]
         tds = "".join(f"<td>{html.escape(c)}</td>" for c in cells)
         trs.append(f"<tr>{tds}</tr>")
@@ -225,7 +253,19 @@ def create_company():
 def list_chains():
     rows = read_csv(DATA / "chains.csv")
     rows = sorted(rows, key=lambda r: r.get("id", ""))
-    head = "<div class='panel'><h2>Chains</h2><p><a class='btn' href='/chains/new'>Add chain</a></p>"
+    q = (request.args.get("q") or "").strip()
+    if q:
+        qq = q.lower()
+        rows = [r for r in rows if qq in (r.get("id","")+" "+r.get("displayName","")).lower()]
+    head = (
+        "<div class='panel'><h2>Chains</h2>"
+        "<form method='get' style='margin:8px 0'>"
+        f"<input type='text' name='q' placeholder='Search id/name' value='{html.escape(q)}' style='max-width:320px'> "
+        "<button class='btn secondary' type='submit'>Search</button> "
+        "<a class='btn secondary' href='/chains'>Clear</a> "
+        "<a class='btn' href='/chains/new' style='float:right'>Add chain</a>"
+        "</form>"
+    )
     if not rows:
         return page("Chains", head + "<p>No chains yet.</p></div>")
     th = "".join(
@@ -237,7 +277,11 @@ def list_chains():
     for r in rows:
         comp_ids = [s.strip() for s in r.get("companyIds", "").split(",") if s.strip()]
         comp_labels = ", ".join(filter(None, [comps.get(cid, cid) for cid in comp_ids]))
-        actions = f"<a class='btn secondary' href='/chains/{html.escape(r.get('id',''))}/edit'>Edit</a>"
+        del_form = (
+            f"<form method='post' action='/chains/{html.escape(r.get('id',''))}/delete' style='display:inline' onsubmit='return confirmDelete()'>"
+            "<button class='btn danger' type='submit'>Delete</button></form>"
+        )
+        actions = f"<a class='btn secondary' href='/chains/{html.escape(r.get('id',''))}/edit'>Edit</a> " + del_form
         cells = [r.get("id", ""), r.get("displayName", ""), r.get("category", ""), comp_labels, r.get("voucherTypes", ""), r.get("tags", ""), r.get("url", ""), actions]
         trs.append("<tr>" + "".join(f"<td>{html.escape(c)}</td>" for c in cells) + "</tr>")
     table = f"<table><tr>{th}<th></th></tr>{''.join(trs)}</table></div>"
@@ -293,6 +337,34 @@ def create_chain():
         append_row_csv(DATA / "chains.csv", row, ["id", "displayName", "category", "companyIds", "voucherTypes", "tags", "url"])
     except ValueError as e:
         return f"<p>Error: {html.escape(str(e))}</p><p><a href='/chains'>Back</a></p>", 400
+    return redirect(url_for("list_chains"))
+
+
+@app.post("/companies/<vid>/delete")
+def delete_company(vid: str):
+    # Do not allow delete if referenced by any chain
+    chains = read_csv(DATA / "chains.csv")
+    refs = [c for c in chains if vid in [s.strip() for s in (c.get("companyIds","") or "").split(",") if s.strip()]]
+    if refs:
+        msg = "この会社はチェーンから参照されています。先に chains.csv の companyIds から外してください。"
+        return page("Blocked", f"<div class='panel'><p>{html.escape(msg)}</p><p><a class='btn secondary' href='/companies'>Back</a></p></div>"), 400
+    ok = delete_row_csv(DATA / "companies.csv", vid, ["id", "name", "ticker", "chainIds", "voucherTypes", "notes"])
+    if not ok:
+        return page("Not Found", f"<div class='panel'><p>Company not found: {html.escape(vid)}</p></div>"), 404
+    return redirect(url_for("list_companies"))
+
+
+@app.post("/chains/<rid>/delete")
+def delete_chain(rid: str):
+    # Do not allow delete if referenced by any store
+    stores = read_csv(DATA / "stores.csv")
+    refs = [s for s in stores if s.get("chainId") == rid]
+    if refs:
+        msg = "このチェーンには店舗データが紐づいています。先に stores.csv の該当行を削除してください。"
+        return page("Blocked", f"<div class='panel'><p>{html.escape(msg)}</p><p><a class='btn secondary' href='/chains'>Back</a></p></div>"), 400
+    ok = delete_row_csv(DATA / "chains.csv", rid, ["id", "displayName", "category", "companyIds", "voucherTypes", "tags", "url"])
+    if not ok:
+        return page("Not Found", f"<div class='panel'><p>Chain not found: {html.escape(rid)}</p></div>"), 404
     return redirect(url_for("list_chains"))
 
 
@@ -422,16 +494,18 @@ def osm_import_form():
         for c in sorted(chains, key=lambda x: x.get('id',''))
         if c.get("id")
     )
-    return (
+    body = (
+        "<div class='panel'>"
         "<h2>OSM Import (experimental)</h2>"
         "<form method='post' action='/stores/osm_import'>"
-        "<div>Name Regex <input name='name_regex' value='ステーキ宮' required></div>"
-        f"<div>Assign chainId <select name='chainId' required>{chain_opts}</select></div>"
-        "<div>Exclude words (comma) <input name='exclude' value='駐車場,宮川'></div>"
-        "<div><button type='submit'>Search & Import</button></div>"
+        "<div class='row'>Name Regex<br><input name='name_regex' value='ステーキ宮' required></div>"
+        f"<div class='row'>Assign chainId<br><select name='chainId' required style='width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:#0c1327;color:#e8ebf1'>{chain_opts}</select></div>"
+        "<div class='row'>Exclude words (comma)<br><input name='exclude' value='駐車場,宮川'></div>"
+        "<div class='actions'><button class='btn' type='submit' name='action' value='preview'>Search & Preview</button></div>"
         "</form>"
-        "<p><a href='/'>Back</a></p>"
+        "</div>"
     )
+    return page("OSM Import", body)
 
 
 def _overpass_query(name_regex: str) -> List[dict]:
@@ -450,76 +524,121 @@ def _overpass_query(name_regex: str) -> List[dict]:
     return obj.get("elements", [])
 
 
+def row_from_osm_element(e: dict, chain_id: str, exclude: List[str], now: str) -> dict | None:
+    def ok_name(name: str) -> bool:
+        if not name:
+            return False
+        for w in exclude:
+            if w and w in name:
+                return False
+        return True
+    t = e.get("type"); eid = e.get("id")
+    tags = e.get("tags", {})
+    name = (tags.get("name", "") or "").strip()
+    branch = tags.get("branch")
+    if branch and branch not in name:
+        name = f"{name} {branch}"
+    if not ok_name(name):
+        return None
+    if t == "node":
+        lat = e.get("lat"); lon = e.get("lon")
+    else:
+        c = e.get("center") or {}
+        lat = c.get("lat"); lon = c.get("lon")
+    if lat is None or lon is None:
+        return None
+    sid = f"store-{chain_id.split('-',1)[-1]}-osm-{t}-{eid}"
+    return {
+        "id": sid,
+        "chainId": chain_id,
+        "name": name,
+        "address": "",
+        "lat": str(lat),
+        "lng": str(lon),
+        "tags": "",
+        "updatedAt": now,
+        "_sel": f"{t}-{eid}",
+    }
+
+
 @app.post("/stores/osm_import")
 def osm_import_action():
     name_regex = request.form.get("name_regex", "").strip()
     chain_id = request.form.get("chainId", "").strip()
     exclude = [w.strip() for w in request.form.get("exclude", "").split(",") if w.strip()]
     if not name_regex or not chain_id:
-        return "Missing name_regex or chainId", 400
+        return page("Error", "<div class='panel'><p>Missing name_regex or chainId</p></div>"), 400
 
     els = _overpass_query(name_regex)
     now = datetime.now(timezone.utc).isoformat()
+    rows = [r for r in (row_from_osm_element(e, chain_id, exclude, now) for e in els) if r]
 
-    def ok_name(name: str) -> bool:
-        if not name:
-            return False
-        for w in exclude:
-            if w in name:
-                return False
-        return True
+    stores = read_csv(DATA / "stores.csv")
+    existing_ids = {r.get("id") for r in stores}
+    new_rows = [r for r in rows if r["id"] not in existing_ids]
+    dup_count = len(rows) - len(new_rows)
 
-    def row_from_osm(e: dict) -> dict | None:
-        t = e.get("type"); eid = e.get("id")
-        tags = e.get("tags", {})
-        name = tags.get("name", "").strip()
-        branch = tags.get("branch")
-        if branch and branch not in name:
-            name = f"{name} {branch}"
-        if not ok_name(name):
-            return None
-        if t == "node":
-            lat = e.get("lat"); lon = e.get("lon")
-        else:
-            c = e.get("center") or {}
-            lat = c.get("lat"); lon = c.get("lon")
-        if lat is None or lon is None:
-            return None
-        sid = f"store-{chain_id.split('-',1)[-1]}-osm-{t}-{eid}"
-        return {
-            "id": sid,
-            "chainId": chain_id,
-            "name": name,
-            "address": "",
-            "lat": str(lat),
-            "lng": str(lon),
-            "tags": "",
-            "updatedAt": now,
-        }
+    if not rows:
+        return page("OSM Import", "<div class='panel'><p>一致する候補が見つかりませんでした。</p></div>")
 
-    rows = [r for r in (row_from_osm(e) for e in els) if r]
+    # Build preview table
+    th = "".join(f"<th>{html.escape(h)}</th>" for h in ["Select", "id", "name", "lat", "lng"])
+    trs = []
+    for r in new_rows:
+        cb = f"<input type='checkbox' name='sel' value='{html.escape(r['_sel'])}' checked>"
+        cells = [cb, r["id"], r["name"], r["lat"], r["lng"]]
+        tds = "".join(f"<td>{html.escape(c)}</td>" for c in cells)
+        trs.append(f"<tr>{tds}</tr>")
+    info = (
+        f"<p><b>{len(rows)}</b> candidates found. "
+        f"<b>{len(new_rows)}</b> new, <span class='help'>{dup_count} duplicates skipped.</span></p>"
+    )
+    form = (
+        "<div class='panel'>"
+        f"<h2>Preview: {html.escape(name_regex)}</h2>"
+        + info +
+        "<form method='post' action='/stores/osm_import/commit'>"
+        f"<input type='hidden' name='name_regex' value='{html.escape(name_regex)}'>"
+        f"<input type='hidden' name='chainId' value='{html.escape(chain_id)}'>"
+        f"<input type='hidden' name='exclude' value='{html.escape(','.join(exclude))}'>"
+        f"<table><tr>{th}</tr>{''.join(trs)}</table>"
+        "<div class='actions'><button class='btn' type='submit'>Import Selected</button> "
+        f"<a class='btn secondary' href='{html.escape(url_for('osm_import_form'))}'>Back</a></div>"
+        "</form>"
+        "</div>"
+    )
+    return page("OSM Import Preview", form)
 
-    # de-duplicate by id against existing stores
+
+@app.post("/stores/osm_import/commit")
+def osm_import_commit():
+    name_regex = request.form.get("name_regex", "").strip()
+    chain_id = request.form.get("chainId", "").strip()
+    exclude = [w.strip() for w in request.form.get("exclude", "").split(",") if w.strip()]
+    sels = request.form.getlist("sel")
+    if not (name_regex and chain_id and sels):
+        return page("Error", "<div class='panel'><p>Missing parameters or no selection.</p></div>"), 400
+    els = _overpass_query(name_regex)
+    now = datetime.now(timezone.utc).isoformat()
+    # map sel key to element
+    idx = {f"{e.get('type')}-{e.get('id')}": e for e in els}
+    chosen = [idx[s] for s in sels if s in idx]
+    rows = [r for r in (row_from_osm_element(e, chain_id, exclude, now) for e in chosen) if r]
     stores_path = DATA / "stores.csv"
     stores = read_csv(stores_path)
     existing_ids = {r.get("id") for r in stores}
     new_rows = [r for r in rows if r["id"] not in existing_ids]
-
-    if not new_rows:
-        return (
-            f"<p>No new stores found for pattern: {html.escape(name_regex)}</p>"
-            f"<p><a href='{html.escape(url_for('osm_import_form'))}'>Back</a></p>"
-        )
-
-    # Append and write back with header
     fieldnames = ["id", "chainId", "name", "address", "lat", "lng", "tags", "updatedAt"]
-    stores.extend(new_rows)
+    if new_rows:
+        stores.extend(new_rows)
     write_csv(stores_path, stores, fieldnames)
-
-    return (
-        f"<p>Imported {len(new_rows)} stores. </p>"
-        f"<p><a href='{html.escape(url_for('osm_import_form'))}'>Back</a></p>"
+    body = (
+        "<div class='panel'>"
+        f"<p>Imported <b>{len(new_rows)}</b> stores (selected: {len(sels)}).</p>"
+        f"<p><a class='btn secondary' href='{html.escape(url_for('osm_import_form'))}'>Back</a></p>"
+        "</div>"
     )
+    return page("OSM Import Done", body)
 
 
 if __name__ == "__main__":
