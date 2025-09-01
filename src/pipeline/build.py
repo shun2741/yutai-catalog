@@ -35,19 +35,12 @@ def list_from_csv(v: str) -> List[str]:
 
 
 def build_catalog() -> Catalog:
-    comps = [
-        Company(
-            id=r.get("id", ""),
-            name=r.get("name", ""),
-            ticker=r.get("ticker") or None,
-            chainIds=list_from_csv(r.get("chainIds", "")),
-            voucherTypes=list_from_csv(r.get("voucherTypes", "")),
-            notes=r.get("notes") or None,
-        )
-        for r in read_csv(DATA / "companies.csv")
-        if r.get("id") and r.get("name")
-    ]
+    # Read raw CSV rows first
+    companies_rows = read_csv(DATA / "companies.csv")
+    chains_rows = read_csv(DATA / "chains.csv")
+    stores_rows = read_csv(DATA / "stores.csv")
 
+    # Build chains first (source of truth for company<->chain relation)
     chains = [
         Chain(
             id=r.get("id", ""),
@@ -58,8 +51,31 @@ def build_catalog() -> Catalog:
             tags=list_from_csv(r.get("tags", "")),
             url=r.get("url") or None,
         )
-        for r in read_csv(DATA / "chains.csv")
+        for r in chains_rows
         if r.get("id") and r.get("displayName")
+    ]
+
+    # Build companyId -> [chainId] reverse index from chains
+    comp_to_chain_ids: dict[str, List[str]] = {}
+    for ch in chains:
+        for comp_id in ch.companyIds:
+            comp_to_chain_ids.setdefault(comp_id, []).append(ch.id)
+    # Keep chainIds lists stable (sorted) for diff friendliness
+    for k, v in comp_to_chain_ids.items():
+        comp_to_chain_ids[k] = sorted(set(v))
+
+    # Build companies, overriding chainIds from reverse index (ignore CSV chainIds)
+    comps = [
+        Company(
+            id=r.get("id", ""),
+            name=r.get("name", ""),
+            ticker=r.get("ticker") or None,
+            chainIds=comp_to_chain_ids.get(r.get("id", ""), []),
+            voucherTypes=list_from_csv(r.get("voucherTypes", "")),
+            notes=r.get("notes") or None,
+        )
+        for r in companies_rows
+        if r.get("id") and r.get("name")
     ]
 
     stores = [
@@ -73,7 +89,7 @@ def build_catalog() -> Catalog:
             tags=list_from_csv(r.get("tags", "")),
             updatedAt=r.get("updatedAt") or datetime.now(timezone.utc).isoformat(),
         )
-        for r in read_csv(DATA / "stores.csv")
+        for r in stores_rows
         if r.get("id") and r.get("chainId") and r.get("name")
     ]
 
@@ -105,4 +121,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
