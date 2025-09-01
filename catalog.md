@@ -104,6 +104,21 @@ OSM取り込み時のID命名規則:
 - 配布: GitHub Actionsで `dist/` を Pages にデプロイ（サイトルートに配置される）
 - バージョン: `YYYY-MM-DD` は論理バージョン。`manifest.version` と整合。
 
+## 管理UI（ローカル簡易ツール）
+
+- 目的: `companies.csv` と `chains.csv` を手で地道に追加するための簡易UI。
+- 起動:
+  - 依存を導入: `python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`
+  - サーバ起動: `PYTHONPATH=./src python src/admin_app.py`
+  - ブラウザ: `http://127.0.0.1:5000/`
+- 機能:
+  - Companies: 一覧表示、追加（chainIds は空でOK。ビルド時に自動付与）
+  - Chains: 一覧表示、追加（companyIds はカンマ区切り）
+  - Stores: OSMインポート（試験的）で名称パターンから店舗を追加（重複除外）
+- 注意:
+  - ローカル編集後はビルド→コミット/プッシュで本番へ反映
+  - OSMインポートは名称ベースのため誤検出に注意。必要に応じてCSVを微修正
+
 ## クライアントからの参照（PWA）
 
 - マニフェスト取得: `https://shun2741.github.io/yutai-catalog/catalog-manifest.json`
