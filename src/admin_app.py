@@ -12,7 +12,8 @@ import subprocess
 import re
 
 
-ROOT = Path(__file__).resolve().parents[2]
+# Repository root (admin_app.py is at repo/src)
+ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 
 
@@ -652,6 +653,14 @@ def osm_import_form():
         "<div class='row'>Name Regex<br><input name='name_regex' value='ステーキ宮' required></div>"
         f"<div class='row'>Assign chainId<br><select name='chainId' required style='width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:#0c1327;color:#e8ebf1'>{chain_opts}</select></div>"
         "<div class='row'>Exclude words (comma)<br><input name='exclude' value='駐車場,宮川'></div>"
+        "<div class='row'>Overpass endpoint<br>"
+        "<select name='endpoint' style='width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:#0c1327;color:#e8ebf1'>"
+        "<option value='auto' selected>Auto (try multiple)</option>"
+        "<option value='https://overpass-api.de/api/interpreter'>overpass-api.de</option>"
+        "<option value='https://z.overpass-api.de/api/interpreter'>z.overpass-api.de</option>"
+        "<option value='https://overpass.kumi.systems/api/interpreter'>overpass.kumi.systems</option>"
+        "</select></div>"
+        "<div class='row'>Timeout (sec)<br><input name='timeout' type='number' value='120'></div>"
         "<div class='actions'><button class='btn' type='submit' name='action' value='preview'>Search & Preview</button></div>"
         "</form>"
         "</div>"
@@ -659,20 +668,33 @@ def osm_import_form():
     return page("OSM Import", body)
 
 
-def _overpass_query(name_regex: str) -> List[dict]:
+def _overpass_query(name_regex: str, timeout_sec: int = 120, endpoint: str = "auto") -> List[dict]:
     q = (
-        f"[out:json][timeout:60];"
+        f"[out:json][timeout:{int(timeout_sec)}];"
         f"area[\"name:ja\"=\"日本\"][admin_level=2];"
         f"(node[\"name\"~\"{name_regex}\"](area);"
         f" way[\"name\"~\"{name_regex}\"](area);"
         f" relation[\"name\"~\"{name_regex}\"](area););"
         f"out center tags;"
     )
-    url = "https://overpass-api.de/api/interpreter?data=" + urllib.parse.quote(q)
-    with urllib.request.urlopen(url) as r:
-        data = r.read()
-    obj = __import__("json").loads(data)
-    return obj.get("elements", [])
+    endpoints = [
+        "https://overpass-api.de/api/interpreter",
+        "https://z.overpass-api.de/api/interpreter",
+        "https://overpass.kumi.systems/api/interpreter",
+    ]
+    tries = [endpoint] if endpoint and endpoint != "auto" else endpoints
+    last_err = None
+    for ep in tries:
+        try:
+            url = ep + "?data=" + urllib.parse.quote(q)
+            with urllib.request.urlopen(url, timeout=timeout_sec + 15) as r:
+                data = r.read()
+            obj = __import__("json").loads(data)
+            return obj.get("elements", [])
+        except Exception as e:
+            last_err = e
+            continue
+    raise last_err if last_err else RuntimeError("Overpass query failed")
 
 
 def row_from_osm_element(e: dict, chain_id: str, exclude: List[str], now: str) -> dict | None:
@@ -717,10 +739,18 @@ def osm_import_action():
     name_regex = request.form.get("name_regex", "").strip()
     chain_id = request.form.get("chainId", "").strip()
     exclude = [w.strip() for w in request.form.get("exclude", "").split(",") if w.strip()]
+    endpoint = request.form.get("endpoint", "auto").strip() or "auto"
+    try:
+        timeout_sec = int(request.form.get("timeout", "120"))
+    except Exception:
+        timeout_sec = 120
     if not name_regex or not chain_id:
         return page("Error", "<div class='panel'><p>Missing name_regex or chainId</p></div>"), 400
-
-    els = _overpass_query(name_regex)
+    try:
+        els = _overpass_query(name_regex, timeout_sec=timeout_sec, endpoint=endpoint)
+    except Exception as e:
+        msg = f"Overpass API error: {str(e)}. エンドポイントやタイムアウトを変更して再試行してください。"
+        return page("Overpass Error", f"<div class='panel'><p>{html.escape(msg)}</p></div>"), 502
     now = datetime.now(timezone.utc).isoformat()
     rows = [r for r in (row_from_osm_element(e, chain_id, exclude, now) for e in els) if r]
 
@@ -737,8 +767,8 @@ def osm_import_action():
     trs = []
     for r in new_rows:
         cb = f"<input type='checkbox' name='sel' value='{html.escape(r['_sel'])}' checked>"
-        cells = [cb, r["id"], r["name"], r["lat"], r["lng"]]
-        tds = "".join(f"<td>{html.escape(c)}</td>" for c in cells)
+        text_cells = [str(r["id"]), str(r["name"]), str(r["lat"]), str(r["lng"])]
+        tds = "<td>" + cb + "</td>" + "".join(f"<td>{html.escape(c)}</td>" for c in text_cells)
         trs.append(f"<tr>{tds}</tr>")
     info = (
         f"<p><b>{len(rows)}</b> candidates found. "
