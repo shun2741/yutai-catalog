@@ -19,6 +19,69 @@ app = Flask(__name__)
 
 ALLOWED_VOUCHER_TYPES = ["食事", "買い物", "レジャー", "その他"]
 
+# --- UI Layout ---
+from string import Template
+
+HTML_BASE_TMPL = Template("""
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>$title</title>
+  <style>
+    :root{--bg:#0b1020;--panel:#121a33;--text:#e8ebf1;--muted:#9aa4c7;--accent:#4f7cff;--ok:#2ecc71;--warn:#f39c12;--bad:#e74c3c;}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,'Noto Sans',sans-serif;}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:1100px;margin:0 auto;padding:24px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    nav a{margin-right:12px}
+    .panel{background:var(--panel);border-radius:10px;padding:16px 18px;box-shadow:0 1px 0 rgba(255,255,255,0.06) inset}
+    h1{font-size:22px;margin:0}
+    h2{font-size:18px;margin:12px 0}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.08)}
+    th{color:var(--muted);text-align:left;font-weight:600}
+    tr:hover{background:rgba(255,255,255,0.03)}
+    .btn{display:inline-block;background:var(--accent);color:white;padding:8px 12px;border-radius:8px;border:0}
+    .btn.secondary{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+    .btn.danger{background:var(--bad)}
+    .row{margin:10px 0}
+    input[type=text], input[type=url], input[type=number] {width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:#0c1327;color:var(--text)}
+    .help{color:var(--muted);font-size:12px}
+    form .actions{margin-top:14px}
+  </style>
+  </head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Yutai Catalog Admin</h1>
+      <nav>
+        <a href="$root">Dashboard</a>
+        <a href="$companies">Companies</a>
+        <a href="$chains">Chains</a>
+        <a href="$stores_osm">Stores (OSM)</a>
+      </nav>
+    </header>
+    $body
+  </div>
+</body>
+</html>
+""")
+
+
+def page(title: str, body_html: str) -> str:
+    return HTML_BASE_TMPL.safe_substitute(
+        title=html.escape(title),
+        root=html.escape(url_for("index")),
+        companies=html.escape(url_for("list_companies")),
+        chains=html.escape(url_for("list_chains")),
+        stores_osm=html.escape(url_for("osm_import_form")),
+        body=body_html,
+    )
+
 
 def read_csv(path: Path) -> List[Dict[str, str]]:
     if not path.exists():
@@ -46,16 +109,44 @@ def append_row_csv(path: Path, row: Dict[str, str], fieldnames: List[str]) -> No
     write_csv(path, rows, fieldnames)
 
 
+def update_row_csv(path: Path, row_id: str, updates: Dict[str, str], fieldnames: List[str]) -> bool:
+    rows = read_csv(path)
+    changed = False
+    for r in rows:
+        if r.get("id") == row_id:
+            r.update(updates)
+            changed = True
+            break
+    if changed:
+        write_csv(path, rows, fieldnames)
+    return changed
+
+
 @app.get("/")
 def index():
-    return (
-        "<h1>Yutai Catalog Admin</h1>"
-        "<ul>"
-        f"<li><a href='{html.escape(url_for('list_companies'))}'>Companies</a></li>"
-        f"<li><a href='{html.escape(url_for('list_chains'))}'>Chains</a></li>"
-        f"<li><a href='{html.escape(url_for('osm_import_form'))}'>Stores: OSM Import (experimental)</a></li>"
-        "</ul>"
+    comps = read_csv(DATA / "companies.csv")
+    chs = read_csv(DATA / "chains.csv")
+    stores = read_csv(DATA / "stores.csv")
+    body = (
+        "<div class='grid'>"
+        "  <div class='panel'>"
+        "    <h2>Companies</h2>"
+        f"    <p><b>{len(comps)}</b> companies registered</p>"
+        f"    <p><a class='btn' href='{html.escape(url_for('list_companies'))}'>Manage Companies</a></p>"
+        "  </div>"
+        "  <div class='panel'>"
+        "    <h2>Chains</h2>"
+        f"    <p><b>{len(chs)}</b> chains registered</p>"
+        f"    <p><a class='btn' href='{html.escape(url_for('list_chains'))}'>Manage Chains</a></p>"
+        "  </div>"
+        "</div>"
+        "<div class='panel' style='margin-top:16px'>"
+        "  <h2>Stores (experimental)</h2>"
+        f"  <p><b>{len(stores)}</b> stores. Import from OSM by name pattern.</p>"
+        f"  <p><a class='btn secondary' href='{html.escape(url_for('osm_import_form'))}'>OSM Import</a></p>"
+        "</div>"
     )
+    return page("Dashboard", body)
 
 
 # Companies
@@ -65,22 +156,21 @@ def index():
 def list_companies():
     rows = read_csv(DATA / "companies.csv")
     rows = sorted(rows, key=lambda r: r.get("id", ""))
-    head = "<h2>Companies</h2><p><a href='/companies/new'>Add company</a></p>"
+    head = "<div class='panel'><h2>Companies</h2><p><a class='btn' href='/companies/new'>Add company</a></p>"
     if not rows:
-        return head + "<p>No companies yet.</p>"
+        return page("Companies", head + "<p>No companies yet.</p></div>")
     th = "".join(
         f"<th>{html.escape(h)}</th>"
         for h in ["id", "name", "ticker", "chainIds", "voucherTypes", "notes"]
     )
     trs = []
     for r in rows:
-        tds = "".join(
-            f"<td>{html.escape(r.get(k, ''))}</td>"
-            for k in ["id", "name", "ticker", "chainIds", "voucherTypes", "notes"]
-        )
+        actions = f"<a class='btn secondary' href='/companies/{html.escape(r.get('id',''))}/edit'>Edit</a>"
+        cells = [r.get("id", ""), r.get("name", ""), r.get("ticker", ""), r.get("chainIds", ""), r.get("voucherTypes", ""), r.get("notes", ""), actions]
+        tds = "".join(f"<td>{html.escape(c)}</td>" for c in cells)
         trs.append(f"<tr>{tds}</tr>")
-    table = f"<table border='1' cellspacing='0' cellpadding='6'><tr>{th}</tr>{''.join(trs)}</table>"
-    return head + table
+    table = f"<table><tr>{th}<th></th></tr>{''.join(trs)}</table></div>"
+    return page("Companies", head + table)
 
 
 @app.get("/companies/new")
@@ -89,18 +179,18 @@ def new_company():
         f"<label><input type='checkbox' name='voucherTypes' value='{html.escape(v)}'> {html.escape(v)}</label> "
         for v in ALLOWED_VOUCHER_TYPES
     )
-    return (
-        "<h2>Add Company</h2>"
+    form = (
+        "<div class='panel'><h2>Add Company</h2>"
         "<form method='post' action='/companies/new'>"
-        "<div>ID <input name='id' required></div>"
-        "<div>Name <input name='name' required></div>"
-        "<div>Ticker <input name='ticker' placeholder='(optional)'></div>"
-        f"<div>Voucher Types {opts}</div>"
-        "<div>Notes <input name='notes' placeholder='(optional)'></div>"
-        "<div><button type='submit'>Add</button></div>"
-        "</form>"
-        "<p><a href='/companies'>Back</a></p>"
+        "<div class='row'>ID<br><input name='id' required placeholder='comp-xxxx'></div>"
+        "<div class='row'>Name<br><input name='name' required></div>"
+        "<div class='row'>Ticker<br><input name='ticker' placeholder='(optional)'></div>"
+        f"<div class='row'>Voucher Types<br>{opts}</div>"
+        "<div class='row'>Notes<br><input name='notes' placeholder='(optional)'></div>"
+        "<div class='actions'><button class='btn' type='submit'>Add</button> <a class='btn secondary' href='/companies'>Cancel</a></div>"
+        "</form></div>"
     )
+    return page("Add Company", form)
 
 
 @app.post("/companies/new")
@@ -135,22 +225,23 @@ def create_company():
 def list_chains():
     rows = read_csv(DATA / "chains.csv")
     rows = sorted(rows, key=lambda r: r.get("id", ""))
-    head = "<h2>Chains</h2><p><a href='/chains/new'>Add chain</a></p>"
+    head = "<div class='panel'><h2>Chains</h2><p><a class='btn' href='/chains/new'>Add chain</a></p>"
     if not rows:
-        return head + "<p>No chains yet.</p>"
+        return page("Chains", head + "<p>No chains yet.</p></div>")
     th = "".join(
         f"<th>{html.escape(h)}</th>"
         for h in ["id", "displayName", "category", "companyIds", "voucherTypes", "tags", "url"]
     )
+    comps = {c.get("id"): c.get("name", "") for c in read_csv(DATA / "companies.csv")}
     trs = []
     for r in rows:
-        tds = "".join(
-            f"<td>{html.escape(r.get(k, ''))}</td>"
-            for k in ["id", "displayName", "category", "companyIds", "voucherTypes", "tags", "url"]
-        )
-        trs.append(f"<tr>{tds}</tr>")
-    table = f"<table border='1' cellspacing='0' cellpadding='6'><tr>{th}</tr>{''.join(trs)}</table>"
-    return head + table
+        comp_ids = [s.strip() for s in r.get("companyIds", "").split(",") if s.strip()]
+        comp_labels = ", ".join(filter(None, [comps.get(cid, cid) for cid in comp_ids]))
+        actions = f"<a class='btn secondary' href='/chains/{html.escape(r.get('id',''))}/edit'>Edit</a>"
+        cells = [r.get("id", ""), r.get("displayName", ""), r.get("category", ""), comp_labels, r.get("voucherTypes", ""), r.get("tags", ""), r.get("url", ""), actions]
+        trs.append("<tr>" + "".join(f"<td>{html.escape(c)}</td>" for c in cells) + "</tr>")
+    table = f"<table><tr>{th}<th></th></tr>{''.join(trs)}</table></div>"
+    return page("Chains", head + table)
 
 
 @app.get("/chains/new")
@@ -162,20 +253,20 @@ def new_chain():
         f"<label><input type='checkbox' name='voucherTypes' value='{html.escape(v)}'> {html.escape(v)}</label> "
         for v in ALLOWED_VOUCHER_TYPES
     )
-    return (
-        "<h2>Add Chain</h2>"
+    form = (
+        "<div class='panel'><h2>Add Chain</h2>"
         "<form method='post' action='/chains/new'>"
-        "<div>ID <input name='id' required placeholder='chain-xxxx'></div>"
-        "<div>Display Name <input name='displayName' required></div>"
-        "<div>Category <input name='category' value='飲食'></div>"
-        f"<div>Company IDs <input name='companyIds' placeholder='comp-... (comma separated)'> <small>existing: {html.escape(comp_ids)}</small></div>"
-        f"<div>Voucher Types {vt_opts}</div>"
-        "<div>Tags <input name='tags' placeholder='comma separated'></div>"
-        "<div>URL <input name='url' placeholder='https://...'></div>"
-        "<div><button type='submit'>Add</button></div>"
-        "</form>"
-        "<p><a href='/chains'>Back</a></p>"
+        "<div class='row'>ID<br><input name='id' required placeholder='chain-xxxx'></div>"
+        "<div class='row'>Display Name<br><input name='displayName' required></div>"
+        "<div class='row'>Category<br><input name='category' value='飲食'></div>"
+        f"<div class='row'>Company IDs<br><input name='companyIds' placeholder='comp-... (comma separated)'><div class='help'>existing: {html.escape(comp_ids)}</div></div>"
+        f"<div class='row'>Voucher Types<br>{vt_opts}</div>"
+        "<div class='row'>Tags<br><input name='tags' placeholder='comma separated'></div>"
+        "<div class='row'>URL<br><input name='url' placeholder='https://...'></div>"
+        "<div class='actions'><button class='btn' type='submit'>Add</button> <a class='btn secondary' href='/chains'>Cancel</a></div>"
+        "</form></div>"
     )
+    return page("Add Chain", form)
 
 
 @app.post("/chains/new")
@@ -202,6 +293,121 @@ def create_chain():
         append_row_csv(DATA / "chains.csv", row, ["id", "displayName", "category", "companyIds", "voucherTypes", "tags", "url"])
     except ValueError as e:
         return f"<p>Error: {html.escape(str(e))}</p><p><a href='/chains'>Back</a></p>", 400
+    return redirect(url_for("list_chains"))
+
+
+# --- Edit forms ---
+
+
+@app.get("/companies/<vid>/edit")
+def edit_company(vid: str):
+    rows = read_csv(DATA / "companies.csv")
+    rec = next((r for r in rows if r.get("id") == vid), None)
+    if not rec:
+        return page("Not Found", f"<p class='panel'>Company not found: {html.escape(vid)}</p>"), 404
+    vts = rec.get("voucherTypes", "").split(",") if rec.get("voucherTypes") else []
+    opts = "".join(
+        f"<label style='margin-right:8px'><input type='checkbox' name='voucherTypes' value='{html.escape(v)}' {'checked' if v in vts else ''}> {html.escape(v)}</label>"
+        for v in ALLOWED_VOUCHER_TYPES
+    )
+    form = (
+        f"<div class='panel'><h2>Edit Company: {html.escape(vid)}</h2>"
+        f"<form method='post' action='/companies/{html.escape(vid)}/edit'>"
+        f"<div class='row'>ID<br><input value='{html.escape(vid)}' disabled><input type='hidden' name='id' value='{html.escape(vid)}'></div>"
+        f"<div class='row'>Name<br><input name='name' value='{html.escape(rec.get('name',''))}' required></div>"
+        f"<div class='row'>Ticker<br><input name='ticker' value='{html.escape(rec.get('ticker',''))}'></div>"
+        f"<div class='row'>Voucher Types<br>{opts}</div>"
+        f"<div class='row'>Notes<br><input name='notes' value='{html.escape(rec.get('notes',''))}'></div>"
+        "<div class='help'>chainIds はビルドで自動付与されます（編集不要）。</div>"
+        "<div class='actions'><button class='btn' type='submit'>Save</button> <a class='btn secondary' href='/companies'>Cancel</a></div>"
+        "</form></div>"
+    )
+    return page(f"Edit {vid}", form)
+
+
+@app.post("/companies/<vid>/edit")
+def update_company(vid: str):
+    name = request.form.get("name", "").strip()
+    ticker = request.form.get("ticker", "").strip()
+    vts = request.form.getlist("voucherTypes")
+    notes = request.form.get("notes", "").strip()
+    if not name:
+        return "Missing name", 400
+    ok = update_row_csv(
+        DATA / "companies.csv",
+        vid,
+        {
+            "name": name,
+            "ticker": ticker,
+            "voucherTypes": ",".join(vts),
+            "notes": notes,
+        },
+        ["id", "name", "ticker", "chainIds", "voucherTypes", "notes"],
+    )
+    if not ok:
+        return page("Not Found", f"<p class='panel'>Company not found: {html.escape(vid)}</p>"), 404
+    return redirect(url_for("list_companies"))
+
+
+@app.get("/chains/<rid>/edit")
+def edit_chain(rid: str):
+    rows = read_csv(DATA / "chains.csv")
+    rec = next((r for r in rows if r.get("id") == rid), None)
+    if not rec:
+        return page("Not Found", f"<p class='panel'>Chain not found: {html.escape(rid)}</p>"), 404
+    comps = read_csv(DATA / "companies.csv")
+    comp_ids = [c.get("id") for c in comps if c.get("id")]
+    selected_comp_ids = set([s.strip() for s in rec.get("companyIds", "").split(",") if s.strip()])
+    comp_checks = "".join(
+        f"<label style='margin-right:8px'><input type='checkbox' name='companyIds' value='{html.escape(cid)}' {'checked' if cid in selected_comp_ids else ''}> {html.escape(cid)}</label>"
+        for cid in comp_ids
+    )
+    vts = rec.get("voucherTypes", "").split(",") if rec.get("voucherTypes") else []
+    vt_opts = "".join(
+        f"<label style='margin-right:8px'><input type='checkbox' name='voucherTypes' value='{html.escape(v)}' {'checked' if v in vts else ''}> {html.escape(v)}</label>"
+        for v in ALLOWED_VOUCHER_TYPES
+    )
+    form = (
+        f"<div class='panel'><h2>Edit Chain: {html.escape(rid)}</h2>"
+        f"<form method='post' action='/chains/{html.escape(rid)}/edit'>"
+        f"<div class='row'>ID<br><input value='{html.escape(rid)}' disabled><input type='hidden' name='id' value='{html.escape(rid)}'></div>"
+        f"<div class='row'>Display Name<br><input name='displayName' value='{html.escape(rec.get('displayName',''))}' required></div>"
+        f"<div class='row'>Category<br><input name='category' value='{html.escape(rec.get('category','')) or 'その他'}'></div>"
+        f"<div class='row'>Company IDs<br>{comp_checks}</div>"
+        f"<div class='row'>Voucher Types<br>{vt_opts}</div>"
+        f"<div class='row'>Tags<br><input name='tags' value='{html.escape(rec.get('tags',''))}'></div>"
+        f"<div class='row'>URL<br><input name='url' value='{html.escape(rec.get('url',''))}'></div>"
+        "<div class='actions'><button class='btn' type='submit'>Save</button> <a class='btn secondary' href='/chains'>Cancel</a></div>"
+        "</form></div>"
+    )
+    return page(f"Edit {rid}", form)
+
+
+@app.post("/chains/<rid>/edit")
+def update_chain(rid: str):
+    display = request.form.get("displayName", "").strip()
+    category = request.form.get("category", "").strip() or "その他"
+    comp_ids = request.form.getlist("companyIds")
+    vts = request.form.getlist("voucherTypes")
+    tags = request.form.get("tags", "").strip()
+    url = request.form.get("url", "").strip()
+    if not display:
+        return "Missing displayName", 400
+    ok = update_row_csv(
+        DATA / "chains.csv",
+        rid,
+        {
+            "displayName": display,
+            "category": category,
+            "companyIds": ",".join(comp_ids),
+            "voucherTypes": ",".join(vts),
+            "tags": tags,
+            "url": url,
+        },
+        ["id", "displayName", "category", "companyIds", "voucherTypes", "tags", "url"],
+    )
+    if not ok:
+        return page("Not Found", f"<p class='panel'>Chain not found: {html.escape(rid)}</p>"), 404
     return redirect(url_for("list_chains"))
 
 
@@ -319,4 +525,3 @@ def osm_import_action():
 if __name__ == "__main__":
     # Development server
     app.run(debug=True)
-
