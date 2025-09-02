@@ -20,6 +20,8 @@ coverage/
 
 # Logs
 *.log
+.admin_app.log
+.admin_app.pid
 
 # Type checker / linters caches
 .mypy_cache/
@@ -34,4 +36,3 @@ coverage/
 # macOS / Windows
 .DS_Store
 Thumbs.db
-
