@@ -1,7 +1,3 @@
 id,name,ticker,chainIds,voucherTypes,notes
-comp-demofoods,デモフーズ,,,食事,
-comp-yamadaretail,ヤマダリテール,,,小売,
-comp-sakurahotel,さくらホテル,,,宿泊,
 comp-skylark,すかいらーく,,,食事,
-
 comp-colowide,コロワイド,,,食事,

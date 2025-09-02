@@ -1,9 +1,4 @@
 id,chainId,name,address,lat,lng,tags,updatedAt
-store-demofoods-tokyo-01,chain-demofoods,デモフーズ 東京駅店,東京都千代田区丸の内1-9-1,35.681236,139.767125,,2025-09-01T00:00:00Z
-store-yamada-shinjuku-01,chain-yamadaretail,ヤマダリテール 新宿本店,東京都新宿区西新宿1-1-1,35.690921,139.700258,家電,2025-09-01T00:00:00Z
-store-yamada-akihabara-01,chain-yamadaretail,ヤマダリテール 秋葉原店,東京都千代田区外神田4-4-3,35.703306,139.771020,家電,2025-09-01T00:00:00Z
-store-sakura-tokyo-01,chain-sakurahotel,さくらホテル 東京,東京都千代田区,35.689501,139.691733,ホテル,2025-09-01T00:00:00Z
-store-sakura-osaka-01,chain-sakurahotel,さくらホテル 大阪,大阪府大阪市北区梅田,34.702485,135.495951,ホテル,2025-09-01T00:00:00Z
 store-syabuyo-osm-node-309585724,chain-syabuyo,しゃぶ葉,"しゃぶ葉, さいたま春日部線, 南平野二丁目, 岩槻区, さいたま市, 埼玉県, 339-0005, 日本",35.9564072,139.7141539,,2025-08-31T05:42:47.487Z
 store-syabuyo-osm-node-1007140979,chain-syabuyo,しゃぶ葉 海老名店,243-0433 神奈川県 海老名市 2丁目 10 14,35.4469032,139.3776853,,2025-08-31T05:42:47.490Z
 store-syabuyo-osm-node-1286756153,chain-syabuyo,しゃぶ葉,"しゃぶ葉, 3, あざみ野南一丁目, あざみ野南, 青葉区, 横浜市, 神奈川県, 225-0012, 日本",35.5624196,139.5532704,,2025-08-31T05:42:48.995Z

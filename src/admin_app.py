@@ -196,11 +196,23 @@ def index():
         "  </div>"
         "</div>"
         "<div class='panel' style='margin-top:16px'>"
-        "  <h2>Stores (experimental)</h2>"
+        "  <h2>Stores</h2>"
         f"  <p><b>{len(stores)}</b> stores. Import from OSM by name pattern.</p>"
         f"  <p><a class='btn' href='/stores'>Manage Stores</a> "
         f"<a class='btn secondary' href='{html.escape(url_for('osm_import_form'))}'>OSM Import</a> "
         f"<a class='btn secondary' href='/ops'>Build & Deploy</a></p>"
+        "    <form method='post' action='/stores/delete' onsubmit='return confirmDelete()' style='margin-top:8px'>"
+        "      <div class='row'>Quick Delete Store by ID<br>"
+        "        <input name='id' placeholder='store-...' required style='max-width:360px'>"
+        "      </div>"
+        "      <div class='actions'><button class='btn danger' type='submit'>Delete Store</button></div>"
+        "    </form>"
+        "    <form method='post' action='/stores/edit_redirect' style='margin-top:8px'>"
+        "      <div class='row'>Quick Edit Store by ID<br>"
+        "        <input name='id' placeholder='store-...' required style='max-width:360px'>"
+        "      </div>"
+        "      <div class='actions'><button class='btn secondary' type='submit'>Open Edit</button></div>"
+        "    </form>"
         "</div>"
     )
     return page("Dashboard", body)
@@ -350,6 +362,29 @@ def delete_store(sid: str):
     if not ok:
         return error_panel("Store not found", url_for('list_stores')), 404
     return redirect(url_for("list_stores"))
+
+
+@app.post("/stores/delete")
+def delete_store_quick():
+    sid = (request.form.get("id") or "").strip()
+    if not sid:
+        return error_panel("ID が空です", url_for('index')), 400
+    ok = delete_row_csv(DATA / "stores.csv", sid, ["id","chainId","name","address","lat","lng","tags","updatedAt"])
+    if not ok:
+        return error_panel("Store not found", url_for('index')), 404
+    return redirect(url_for('index'))
+
+
+@app.post("/stores/edit_redirect")
+def edit_store_redirect():
+    sid = (request.form.get("id") or "").strip()
+    if not sid:
+        return error_panel("ID が空です", url_for('index')), 400
+    rows = read_csv(DATA / "stores.csv")
+    rec = next((r for r in rows if r.get("id") == sid), None)
+    if not rec:
+        return error_panel("Store not found", url_for('index')), 404
+    return redirect(url_for('edit_store', sid=sid))
 
 
 # Companies
