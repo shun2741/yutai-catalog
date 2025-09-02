@@ -176,11 +176,23 @@ def index():
         "    <h2>Companies</h2>"
         f"    <p><b>{len(comps)}</b> companies registered</p>"
         f"    <p><a class='btn' href='{html.escape(url_for('list_companies'))}'>Manage Companies</a></p>"
+        "    <form method='post' action='/companies/delete' onsubmit='return confirmDelete()' style='margin-top:8px'>"
+        "      <div class='row'>Quick Delete by ID<br>"
+        "        <input name='id' placeholder='comp-xxxx' required style='max-width:260px'>"
+        "      </div>"
+        "      <div class='actions'><button class='btn danger' type='submit'>Delete Company</button></div>"
+        "    </form>"
         "  </div>"
         "  <div class='panel'>"
         "    <h2>Chains</h2>"
         f"    <p><b>{len(chs)}</b> chains registered</p>"
         f"    <p><a class='btn' href='{html.escape(url_for('list_chains'))}'>Manage Chains</a></p>"
+        "    <form method='post' action='/chains/delete' onsubmit='return confirmDelete()' style='margin-top:8px'>"
+        "      <div class='row'>Quick Delete by ID<br>"
+        "        <input name='id' placeholder='chain-xxxx' required style='max-width:260px'>"
+        "      </div>"
+        "      <div class='actions'><button class='btn danger' type='submit'>Delete Chain</button></div>"
+        "    </form>"
         "  </div>"
         "</div>"
         "<div class='panel' style='margin-top:16px'>"
@@ -192,6 +204,39 @@ def index():
         "</div>"
     )
     return page("Dashboard", body)
+
+
+@app.post("/companies/delete")
+def delete_company_quick():
+    vid = (request.form.get("id") or "").strip()
+    if not vid:
+        return error_panel("ID が空です", url_for('index')), 400
+    # reuse same safe check as list page
+    chains = read_csv(DATA / "chains.csv")
+    refs = [c for c in chains if vid in [s.strip() for s in (c.get("companyIds","") or "").split(",") if s.strip()]]
+    if refs:
+        msg = "この会社はチェーンから参照されています。先に chains.csv の companyIds から外してください。"
+        return error_panel(msg, url_for('index')), 400
+    ok = delete_row_csv(DATA / "companies.csv", vid, ["id", "name", "ticker", "chainIds", "voucherTypes", "notes"])
+    if not ok:
+        return error_panel("Company not found", url_for('index')), 404
+    return redirect(url_for('index'))
+
+
+@app.post("/chains/delete")
+def delete_chain_quick():
+    rid = (request.form.get("id") or "").strip()
+    if not rid:
+        return error_panel("ID が空です", url_for('index')), 400
+    stores = read_csv(DATA / "stores.csv")
+    refs = [s for s in stores if s.get("chainId") == rid]
+    if refs:
+        msg = "このチェーンには店舗データが紐づいています。先に stores.csv の該当行を削除してください。"
+        return error_panel(msg, url_for('index')), 400
+    ok = delete_row_csv(DATA / "chains.csv", rid, ["id", "displayName", "category", "companyIds", "voucherTypes", "tags", "url"])
+    if not ok:
+        return error_panel("Chain not found", url_for('index')), 404
+    return redirect(url_for('index'))
 
 
 # ---- Stores: list/search/edit/delete ----
