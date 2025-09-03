@@ -52,8 +52,9 @@ def list_stores():
             f"<form method='post' action='/stores/{html.escape(r.get('id',''))}/delete' style='display:inline' onsubmit='return confirmDelete()'>"
             "<button class='btn danger' type='submit'>Delete</button></form>"
         )
-        cells = [r.get("id",""), r.get("chainId",""), r.get("name",""), r.get("lat",""), r.get("lng",""), r.get("updatedAt",""), actions]
-        trs.append("<tr>" + "".join(f"<td>{html.escape(c)}</td>" for c in cells) + "</tr>")
+        data_cells = [r.get("id",""), r.get("chainId",""), r.get("name",""), r.get("lat",""), r.get("lng",""), r.get("updatedAt","")]
+        row_html = "".join(f"<td>{html.escape(c)}</td>" for c in data_cells) + f"<td>{actions}</td>"
+        trs.append("<tr>" + row_html + "</tr>")
     table = f"<table><tr>{th}</tr>{''.join(trs)}</table></div>"
     return page("Stores", head + table)
 
@@ -362,4 +363,3 @@ def osm_import_commit():
         "</div>"
     )
     return page("OSM Import Done", body)
-

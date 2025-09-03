@@ -46,8 +46,8 @@ def list_companies():
             f"<form method='post' action='/companies/{html.escape(r.get('id',''))}/delete' style='display:inline' onsubmit='return confirmDelete()'>"
             "<button class='btn danger' type='submit'>Delete</button></form>"
         )
-        cells = [r.get("id", ""), r.get("name", ""), r.get("ticker", ""), r.get("chainIds", ""), r.get("voucherTypes", ""), r.get("notes", ""), actions]
-        tds = "".join(f"<td>{html.escape(c)}</td>" for c in cells)
+        data_cells = [r.get("id", ""), r.get("name", ""), r.get("ticker", ""), r.get("chainIds", ""), r.get("voucherTypes", ""), r.get("notes", "")]
+        tds = "".join(f"<td>{html.escape(c)}</td>" for c in data_cells) + f"<td>{actions}</td>"
         trs.append(f"<tr>{tds}</tr>")
     table = f"<table><tr>{th}<th></th></tr>{''.join(trs)}</table></div>"
     return page("Companies", head + table)
@@ -158,4 +158,3 @@ def delete_company(vid: str):
     if not ok:
         return page("Not Found", f"<div class='panel'><p>Company not found: {html.escape(vid)}</p></div>"), 404
     return redirect(url_for("companies.list_companies"))
-

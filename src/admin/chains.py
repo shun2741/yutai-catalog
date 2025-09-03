@@ -48,8 +48,9 @@ def list_chains():
             f"<form method='post' action='/chains/{html.escape(r.get('id',''))}/delete' style='display:inline' onsubmit='return confirmDelete()'>"
             "<button class='btn danger' type='submit'>Delete</button></form>"
         )
-        cells = [r.get("id", ""), r.get("displayName", ""), r.get("category", ""), comp_labels, r.get("voucherTypes", ""), r.get("tags", ""), r.get("url", ""), actions]
-        trs.append("<tr>" + "".join(f"<td>{html.escape(c)}</td>" for c in cells) + "</tr>")
+        data_cells = [r.get("id", ""), r.get("displayName", ""), r.get("category", ""), comp_labels, r.get("voucherTypes", ""), r.get("tags", ""), r.get("url", "")]
+        row_html = "".join(f"<td>{html.escape(c)}</td>" for c in data_cells) + f"<td>{actions}</td>"
+        trs.append("<tr>" + row_html + "</tr>")
     table = f"<table><tr>{th}<th></th></tr>{''.join(trs)}</table></div>"
     return page("Chains", head + table)
 
@@ -178,4 +179,3 @@ def delete_chain(rid: str):
     if not ok:
         return page("Not Found", f"<div class='panel'><p>Chain not found: {html.escape(rid)}</p></div>"), 404
     return redirect(url_for("chains.list_chains"))
-
