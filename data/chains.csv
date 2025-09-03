@@ -2,3 +2,5 @@ id,displayName,category,companyIds,voucherTypes,tags,url
 chain-syabuyo,しゃぶ葉,飲食,comp-skylark,食事,しゃぶしゃぶ,https://www.syabu-yo.com/
 chain-kappasushi,かっぱ寿司,飲食,comp-colowide,食事,寿司,https://www.kappasushi.jp/
 chain-miya,ステーキ宮,飲食,comp-colowide,食事,ステーキ,https://www.miya.com/
+chain-lapausa,ラパウザ,飲食,comp-colowide,食事,洋食,https://www.lapausa.jp/
+chain-isomaru,磯丸水産,飲食,comp-createrestaurants,食事,海鮮,https://isomaru.jp/
