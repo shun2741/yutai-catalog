@@ -93,6 +93,11 @@ HTML_BASE_TMPL = Template(
   </style>
   <script>
     function confirmDelete(){ return confirm('Are you sure you want to delete this item?'); }
+    document.addEventListener('DOMContentLoaded', function(){
+      document.querySelectorAll('td[data-raw]').forEach(function(td){
+        try{ td.innerHTML = decodeURIComponent(td.getAttribute('data-raw')||''); }catch(e){ /* noop */ }
+      });
+    });
   </script>
   </head>
 <body>
@@ -125,4 +130,3 @@ def page(title: str, body_html: str) -> str:
         stores_osm=html.escape(url_for("stores.osm_import_form")),
         body=body_html,
     )
-

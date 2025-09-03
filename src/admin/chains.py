@@ -1,6 +1,7 @@
 from __future__ import annotations
 import html
 from flask import Blueprint, request, redirect, url_for
+from urllib.parse import quote
 
 from .common import (
     DATA,
@@ -49,10 +50,11 @@ def list_chains():
             "<button class='btn danger' type='submit'>Delete</button></form>"
         )
         data_cells = [r.get("id", ""), r.get("displayName", ""), r.get("category", ""), comp_labels, r.get("voucherTypes", ""), r.get("tags", ""), r.get("url", "")]
-        row_html = "".join(f"<td>{html.escape(c)}</td>" for c in data_cells) + f"<td>{actions}</td>"
+        encoded = quote(actions, safe='')
+        row_html = "".join(f"<td>{html.escape(c)}</td>" for c in data_cells) + f"<td data-raw='{encoded}'></td>"
         trs.append("<tr>" + row_html + "</tr>")
     table = f"<table><tr>{th}<th></th></tr>{''.join(trs)}</table></div>"
-    return page("Chains", head + table)
+    return page("Chains", html.unescape(head + table))
 
 
 @bp.get("/chains/new")

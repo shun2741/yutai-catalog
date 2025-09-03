@@ -1,6 +1,7 @@
 from __future__ import annotations
 import html
 from flask import Blueprint, request, redirect, url_for
+from urllib.parse import quote
 
 from .common import (
     DATA,
@@ -47,10 +48,12 @@ def list_companies():
             "<button class='btn danger' type='submit'>Delete</button></form>"
         )
         data_cells = [r.get("id", ""), r.get("name", ""), r.get("ticker", ""), r.get("chainIds", ""), r.get("voucherTypes", ""), r.get("notes", "")]
-        tds = "".join(f"<td>{html.escape(c)}</td>" for c in data_cells) + f"<td>{actions}</td>"
+        encoded = quote(actions, safe='')
+        tds = "".join(f"<td>{html.escape(c)}</td>" for c in data_cells) + f"<td data-raw='{encoded}'></td>"
         trs.append(f"<tr>{tds}</tr>")
     table = f"<table><tr>{th}<th></th></tr>{''.join(trs)}</table></div>"
-    return page("Companies", head + table)
+    # Some environments escape inner HTML; ensure action buttons render
+    return page("Companies", html.unescape(head + table))
 
 
 @bp.get("/companies/new")

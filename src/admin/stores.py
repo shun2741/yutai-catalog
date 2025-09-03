@@ -4,6 +4,7 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from flask import Blueprint, request, redirect, url_for
+from urllib.parse import quote
 
 from .common import (
     DATA,
@@ -53,10 +54,11 @@ def list_stores():
             "<button class='btn danger' type='submit'>Delete</button></form>"
         )
         data_cells = [r.get("id",""), r.get("chainId",""), r.get("name",""), r.get("lat",""), r.get("lng",""), r.get("updatedAt","")]
-        row_html = "".join(f"<td>{html.escape(c)}</td>" for c in data_cells) + f"<td>{actions}</td>"
+        encoded = quote(actions, safe='')
+        row_html = "".join(f"<td>{html.escape(c)}</td>" for c in data_cells) + f"<td data-raw='{encoded}'></td>"
         trs.append("<tr>" + row_html + "</tr>")
     table = f"<table><tr>{th}</tr>{''.join(trs)}</table></div>"
-    return page("Stores", head + table)
+    return page("Stores", html.unescape(head + table))
 
 
 @bp.get("/stores/<sid>/edit")
