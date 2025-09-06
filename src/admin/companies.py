@@ -2,6 +2,9 @@ from __future__ import annotations
 import html
 from flask import Blueprint, request, redirect, url_for
 from urllib.parse import quote
+import urllib.request
+import urllib.parse
+import re
 
 from .common import (
     DATA,
@@ -31,7 +34,10 @@ def list_companies():
         f"<input type='text' name='q' placeholder='Search id/name/ticker' value='{html.escape(q)}' style='max-width:320px'> "
         "<button class='btn secondary' type='submit'>Search</button> "
         "<a class='btn secondary' href='/companies'>Clear</a> "
-        "<a class='btn' href='/companies/new' style='float:right'>Add company</a>"
+        "<span style='float:right'>"
+        "<a class='btn secondary' href='/companies/auto_import' style='margin-right:8px'>Auto import</a>"
+        "<a class='btn' href='/companies/new'>Add company</a>"
+        "</span>"
         "</form>"
     )
     if not rows:
@@ -54,6 +60,141 @@ def list_companies():
     table = f"<table><tr>{th}<th></th></tr>{''.join(trs)}</table></div>"
     # Some environments escape inner HTML; ensure action buttons render
     return page("Companies", html.unescape(head + table))
+
+
+# --- Auto import (experimental) ---
+
+
+@bp.get("/companies/auto_import")
+def companies_auto_import_form():
+    form = (
+        "<div class='panel'><h2>Companies: Auto Import (experimental)</h2>"
+        "<form method='post' action='/companies/auto_import'>"
+        "<div class='row'>Source URLs (one per line)<br><textarea name='urls' rows='6' style='width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:#0c1327;color:#e8ebf1' placeholder='https://example.com/list1\nhttps://example.com/list2'></textarea></div>"
+        "<div class='row'>Or paste raw text<br><textarea name='raw' rows='6' style='width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:#0c1327;color:#e8ebf1' placeholder='(optional)'></textarea></div>"
+        "<div class='row'>Ticker regex (4 digits) & keyword<br><input name='keyword' value='優待' style='width:200px'> <span class='help'>Used to narrow extraction (optional)</span></div>"
+        "<div class='actions'><button class='btn' type='submit'>Fetch & Preview</button> <a class='btn secondary' href='/companies'>Back</a></div>"
+        "</form></div>"
+    )
+    return page("Companies Auto Import", form)
+
+
+def _fetch_text_from_urls(urls: list[str], timeout: int = 20) -> str:
+    chunks: list[str] = []
+    for u in urls:
+        u = u.strip()
+        if not u:
+            continue
+        try:
+            req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                data = r.read()
+            try:
+                text = data.decode("utf-8", errors="ignore")
+            except Exception:
+                text = data.decode("shift_jis", errors="ignore")
+            chunks.append(text)
+        except Exception:
+            continue
+    return "\n\n".join(chunks)
+
+
+def _extract_candidates(text: str, keyword: str | None = None) -> list[tuple[str, str]]:
+    # Normalize whitespace
+    body = re.sub(r"\s+", " ", text)
+    # Find all 4-digit tickers
+    candidates: set[tuple[str, str]] = set()
+    for m in re.finditer(r"(\d{4})", body):
+        ticker = m.group(1)
+        # Extract nearby window for name heuristics
+        start = max(0, m.start() - 60)
+        end = min(len(body), m.end() + 60)
+        window = body[start:end]
+        if keyword and keyword not in window:
+            continue
+        # Heuristic for company name: contiguous CJK/katakana/hiragana/英字 + 株式会社/HD等含む
+        name_match = re.search(r"([\u3040-\u30FF\u4E00-\u9FFFＡ-ＺA-Za-z0-9・ー＆\-]{2,20})", window)
+        name = name_match.group(1) if name_match else f"{ticker}"
+        # Clean obvious suffixes
+        name = name.strip()
+        candidates.add((ticker, name))
+    # Return sorted unique
+    return sorted(candidates)
+
+
+@bp.post("/companies/auto_import")
+def companies_auto_import_preview():
+    urls_raw = (request.form.get("urls") or "").strip()
+    raw_text = (request.form.get("raw") or "").strip()
+    keyword = (request.form.get("keyword") or "").strip() or None
+    urls = [u.strip() for u in urls_raw.splitlines() if u.strip()]
+    text = raw_text or _fetch_text_from_urls(urls)
+    if not text:
+        return page("Error", "<div class='panel'><p>No input text or fetch failed.</p><p><a class='btn secondary' href='/companies/auto_import'>Back</a></p></div>"), 400
+    cands = _extract_candidates(text, keyword)
+    # Compare with existing
+    existing = read_csv(DATA / "companies.csv")
+    existing_ids = {r.get("id") for r in existing}
+    existing_tickers = {r.get("ticker") for r in existing}
+    rows = []
+    for ticker, name in cands:
+        cid = f"comp-{ticker}"
+        dup = (cid in existing_ids) or (ticker in existing_tickers)
+        rows.append((cid, name, ticker, dup))
+    th = "".join(f"<th>{h}</th>" for h in ["Select", "id", "name", "ticker", "status"])
+    trs = []
+    for cid, name, ticker, dup in rows:
+        cb = "" if dup else f"<input type='checkbox' name='sel' value='{html.escape(cid)}' checked>"
+        status = "duplicate" if dup else "new"
+        tds = "".join(f"<td>{html.escape(x)}</td>" for x in [cid, name, ticker, status])
+        trs.append(f"<tr><td>{cb}</td>{tds}</tr>")
+    form = (
+        "<div class='panel'>"
+        "<h2>Preview: Companies Auto Import</h2>"
+        f"<form method='post' action='/companies/auto_import/commit'>"
+        f"<input type='hidden' name='keyword' value='{html.escape(keyword or '')}'>"
+        f"<input type='hidden' name='urls' value='{html.escape(urls_raw)}'>"
+        f"<input type='hidden' name='raw' value='{html.escape(raw_text)}'>"
+        f"<table><tr>{th}</tr>{''.join(trs)}</table>"
+        "<div class='actions'><button class='btn' type='submit'>Import Selected</button> <a class='btn secondary' href='/companies/auto_import'>Back</a></div>"
+        "</form>"
+        "</div>"
+    )
+    return page("Companies Auto Import Preview", form)
+
+
+@bp.post("/companies/auto_import/commit")
+def companies_auto_import_commit():
+    sels = request.form.getlist("sel")
+    if not sels:
+        return page("Error", "<div class='panel'><p>No selection.</p><p><a class='btn secondary' href='/companies/auto_import'>Back</a></p></div>"), 400
+    existing = read_csv(DATA / "companies.csv")
+    existing_ids = {r.get("id") for r in existing}
+    existing_tickers = {r.get("ticker") for r in existing}
+    added = 0
+    for cid in sels:
+        m = re.match(r"comp-(\d{4})$", cid)
+        if not m:
+            continue
+        ticker = m.group(1)
+        # name fallback = ticker
+        name = ticker
+        row = {"id": cid, "name": name, "ticker": ticker, "chainIds": "", "voucherTypes": "その他", "notes": ""}
+        if cid in existing_ids or ticker in existing_tickers:
+            continue
+        existing.append(row)
+        existing_ids.add(cid)
+        existing_tickers.add(ticker)
+        added += 1
+    write_csv(DATA / "companies.csv", existing, ["id", "name", "ticker", "chainIds", "voucherTypes", "notes"])
+    body = (
+        "<div class='panel'>"
+        f"<p>Imported <b>{added}</b> companies.</p>"
+        "<p class='help'>Names default to ticker if not detected. Please edit as needed.</p>"
+        "<p><a class='btn' href='/companies'>Go to Companies</a></p>"
+        "</div>"
+    )
+    return page("Companies Auto Import Done", body)
 
 
 @bp.get("/companies/new")
