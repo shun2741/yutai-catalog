@@ -210,7 +210,13 @@ def companies_jquants_form():
     form = (
         "<div class='panel'><h2>Companies: J-Quants Import (experimental)</h2>"
         "<form method='post' action='/companies/jquants'>"
-        "<div class='row'>Bearer Token<br><input name='token' placeholder='eyJ... (paste your J-Quants access token)' style='width:100%'></div>"
+        "<div class='row'>Bearer Token (idToken)<br><input name='token' placeholder='eyJ... (idToken; optional if using email/password or refreshToken)' style='width:100%'></div>"
+        "<div class='row'>— または —</div>"
+        "<div class='row'>Email / Password から取得<br>"
+        "Email <input name='mail' placeholder='you@example.com' style='width:280px'> "
+        "Password <input type='password' name='password' placeholder='********' style='width:220px'> "
+        "</div>"
+        "<div class='row'>Refresh Token から取得<br><input name='refresh' placeholder='refreshToken (optional)' style='width:100%'></div>"
         "<div class='row'>Filter (optional)<br>"
         "Code prefix <input name='prefix' placeholder='e.g. 13' style='width:120px'> "
         "Market <input name='market' placeholder='PRIME/STANDARD/GROWTH' style='width:220px'> "
@@ -245,11 +251,50 @@ def _jq_fetch_listed(token: str) -> list[dict]:
     return out
 
 
+def _jq_get_refresh_token(mail: str, password: str) -> str:
+    url = "https://api.jquants.com/v1/token/auth_user"
+    payload = json.dumps({"mailaddress": mail, "password": password}).encode("utf-8")
+    req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json", "User-Agent": "yutai-admin/1.0"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        data = r.read().decode("utf-8", errors="ignore")
+    obj = json.loads(data or "{}")
+    token = obj.get("refreshToken") or obj.get("refreshtoken") or obj.get("refresh_token")
+    if not token:
+        raise RuntimeError(f"refreshToken not found in response: {obj}")
+    return token
+
+
+def _jq_get_id_from_refresh(refresh_token: str) -> str:
+    url = f"https://api.jquants.com/v1/token/auth_refresh?refreshtoken={urllib.parse.quote(refresh_token)}"
+    req = urllib.request.Request(url, method="POST", headers={"User-Agent": "yutai-admin/1.0"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        data = r.read().decode("utf-8", errors="ignore")
+    obj = json.loads(data or "{}")
+    token = obj.get("idToken") or obj.get("id_token")
+    if not token:
+        raise RuntimeError(f"idToken not found in response: {obj}")
+    return token
+
+
 @bp.post("/companies/jquants")
 def companies_jquants_preview():
     token = (request.form.get("token") or "").strip()
     prefix = (request.form.get("prefix") or "").strip()
     market = (request.form.get("market") or "").strip().upper()
+    # Optional helpers: mail/password or refresh
+    mail = (request.form.get("mail") or "").strip()
+    password = (request.form.get("password") or "").strip()
+    refresh = (request.form.get("refresh") or "").strip()
+    # If no id token provided, try to derive
+    if not token:
+        try:
+            if not refresh and mail and password:
+                refresh = _jq_get_refresh_token(mail, password)
+            if refresh:
+                token = _jq_get_id_from_refresh(refresh)
+        except Exception as e:
+            msg = f"Failed to obtain token: {e}"
+            return page("J-Quants Error", f"<div class='panel'><p>{html.escape(msg)}</p><p><a class='btn secondary' href='/companies/jquants'>Back</a></p></div>"), 502
     try:
         listed = _jq_fetch_listed(token)
     except Exception as e:
