@@ -41,6 +41,9 @@ def list_stores():
         f"<select name='chainId' style='padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:#0c1327;color:#e8ebf1'>{chain_opts}</select>"
         "<button class='btn secondary' type='submit'>Search</button>"
         "<a class='btn secondary' href='/stores'>Clear</a>"
+        "<span style='margin-left:auto'>"
+        "<a class='btn secondary' href='/stores/osm_import'>OSM import</a>"
+        "</span>"
         "</form>"
     )
     if not rows:
@@ -59,6 +62,9 @@ def list_stores():
         trs.append("<tr>" + row_html + "</tr>")
     table = f"<table><tr>{th}</tr>{''.join(trs)}</table></div>"
     return page("Stores", html.unescape(head + table))
+
+
+# (Scrape import removed by request)
 
 
 @bp.get("/stores/<sid>/edit")
