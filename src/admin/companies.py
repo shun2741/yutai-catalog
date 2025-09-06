@@ -37,6 +37,7 @@ def list_companies():
         "<a class='btn secondary' href='/companies'>Clear</a> "
         "<span style='float:right'>"
         "<a class='btn secondary' href='/companies/auto_import' style='margin-right:8px'>Auto import</a>"
+        "<a class='btn secondary' href='/companies/jquants' style='margin-right:8px'>J-Quants import</a>"
         "<a class='btn' href='/companies/new'>Add company</a>"
         "</span>"
         "</form>"
