@@ -5,6 +5,7 @@ from urllib.parse import quote
 import urllib.request
 import urllib.parse
 import re
+import json
 
 from .common import (
     DATA,
@@ -195,6 +196,131 @@ def companies_auto_import_commit():
         "</div>"
     )
     return page("Companies Auto Import Done", body)
+
+
+# --- J-Quants import (experimental) ---
+
+
+JQ_LISTED_URL = "https://api.jquants.com/v1/listed/info"
+
+
+@bp.get("/companies/jquants")
+def companies_jquants_form():
+    form = (
+        "<div class='panel'><h2>Companies: J-Quants Import (experimental)</h2>"
+        "<form method='post' action='/companies/jquants'>"
+        "<div class='row'>Bearer Token<br><input name='token' placeholder='eyJ... (paste your J-Quants access token)' style='width:100%'></div>"
+        "<div class='row'>Filter (optional)<br>"
+        "Code prefix <input name='prefix' placeholder='e.g. 13' style='width:120px'> "
+        "Market <input name='market' placeholder='PRIME/STANDARD/GROWTH' style='width:220px'> "
+        "</div>"
+        "<div class='actions'><button class='btn' type='submit'>Fetch & Preview</button> <a class='btn secondary' href='/companies'>Back</a></div>"
+        "</form>"
+        "<p class='help'>注: この画面はアクセストークンをそのまま送信します。セキュリティのため、使い終わったらトークンをローテーションしてください。</p>"
+        "</div>"
+    )
+    return page("Companies J-Quants Import", form)
+
+
+def _jq_fetch_listed(token: str) -> list[dict]:
+    if not token:
+        return []
+    req = urllib.request.Request(JQ_LISTED_URL, headers={"Authorization": f"Bearer {token}", "User-Agent": "yutai-admin/1.0"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        data = r.read().decode("utf-8", errors="ignore")
+    try:
+        obj = json.loads(data)
+    except Exception:
+        return []
+    # common payload shape: {"info":[{"Code":"1301","CompanyName":"...","Market":"PRIME"}, ...]}
+    arr = obj.get("info") or obj.get("results") or obj.get("data") or []
+    out = []
+    for it in arr:
+        code = str(it.get("Code") or it.get("code") or "").strip()
+        name = str(it.get("CompanyName") or it.get("companyName") or it.get("Name") or "").strip()
+        market = str(it.get("Market") or it.get("market") or "").strip()
+        if code:
+            out.append({"code": code, "name": name or code, "market": market})
+    return out
+
+
+@bp.post("/companies/jquants")
+def companies_jquants_preview():
+    token = (request.form.get("token") or "").strip()
+    prefix = (request.form.get("prefix") or "").strip()
+    market = (request.form.get("market") or "").strip().upper()
+    try:
+        listed = _jq_fetch_listed(token)
+    except Exception as e:
+        msg = f"J-Quants API error: {e}"
+        return page("J-Quants Error", f"<div class='panel'><p>{html.escape(msg)}</p><p><a class='btn secondary' href='/companies/jquants'>Back</a></p></div>"), 502
+    if prefix:
+        listed = [x for x in listed if x.get("code", "").startswith(prefix)]
+    if market:
+        listed = [x for x in listed if (x.get("market") or "").upper().startswith(market)]
+    existing = read_csv(DATA / "companies.csv")
+    existing_ids = {r.get("id") for r in existing}
+    existing_tickers = {r.get("ticker") for r in existing}
+    rows = []
+    for it in listed:
+        code = it.get("code")
+        name = it.get("name")
+        cid = f"comp-{code}"
+        dup = (cid in existing_ids) or (code in existing_tickers)
+        rows.append((cid, name, code, it.get("market", ""), dup))
+    th = "".join(f"<th>{h}</th>" for h in ["Select", "id", "name", "ticker", "market", "status"])
+    trs = []
+    for cid, name, code, mkt, dup in rows:
+        cb = "" if dup else f"<input type='checkbox' name='sel' value='{html.escape(cid)}' checked>"
+        status = "duplicate" if dup else "new"
+        tds = "".join(f"<td>{html.escape(x)}</td>" for x in [cid, name, code, mkt, status])
+        trs.append(f"<tr><td>{cb}</td>{tds}</tr>")
+    form = (
+        "<div class='panel'>"
+        "<h2>Preview: Companies J-Quants Import</h2>"
+        f"<form method='post' action='/companies/jquants/commit'>"
+        f"<input type='hidden' name='token' value='{html.escape(token)}'>"
+        f"<input type='hidden' name='prefix' value='{html.escape(prefix)}'>"
+        f"<input type='hidden' name='market' value='{html.escape(market)}'>"
+        f"<table><tr>{th}</tr>{''.join(trs)}</table>"
+        "<div class='actions'><button class='btn' type='submit'>Import Selected</button> <a class='btn secondary' href='/companies/jquants'>Back</a></div>"
+        "</form>"
+        "</div>"
+    )
+    return page("Companies J-Quants Import Preview", form)
+
+
+@bp.post("/companies/jquants/commit")
+def companies_jquants_commit():
+    sels = request.form.getlist("sel")
+    if not sels:
+        return page("Error", "<div class='panel'><p>No selection.</p><p><a class='btn secondary' href='/companies/jquants'>Back</a></p></div>"), 400
+    existing = read_csv(DATA / "companies.csv")
+    existing_ids = {r.get("id") for r in existing}
+    existing_tickers = {r.get("ticker") for r in existing}
+    added = 0
+    for cid in sels:
+        m = re.match(r"comp-(\d{4})$", cid)
+        if not m:
+            continue
+        ticker = m.group(1)
+        name = ticker
+        row = {"id": cid, "name": name, "ticker": ticker, "chainIds": "", "voucherTypes": "その他", "notes": ""}
+        if cid in existing_ids or ticker in existing_tickers:
+            continue
+        existing.append(row)
+        existing_ids.add(cid)
+        existing_tickers.add(ticker)
+        added += 1
+    write_csv(DATA / "companies.csv", existing, ["id", "name", "ticker", "chainIds", "voucherTypes", "notes"])
+    body = (
+        "<div class='panel'>"
+        f"<p>Imported <b>{added}</b> companies from J-Quants.</p>"
+        "<p class='help'>Names default to ticker if not supplied by API. Please edit as needed.</p>"
+        "<p><a class='btn' href='/companies'>Go to Companies</a></p>"
+        "</div>"
+    )
+    return page("Companies J-Quants Import Done", body)
 
 
 @bp.get("/companies/new")
