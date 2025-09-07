@@ -73,6 +73,7 @@ def build_catalog() -> Catalog:
             chainIds=comp_to_chain_ids.get(r.get("id", ""), []),
             voucherTypes=list_from_csv(r.get("voucherTypes", "")),
             notes=r.get("notes") or None,
+            url=r.get("url") or None,
         )
         for r in companies_rows
         if r.get("id") and r.get("name")

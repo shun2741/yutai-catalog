@@ -44,7 +44,7 @@ def list_companies():
         return page("Companies", head + "<p>No companies yet.</p></div>")
     th = "".join(
         f"<th>{html.escape(h)}</th>"
-        for h in ["id", "name", "ticker", "chainIds", "voucherTypes", "notes"]
+        for h in ["id", "name", "ticker", "chainIds", "voucherTypes", "notes", "url"]
     )
     trs = []
     for r in rows:
@@ -53,7 +53,15 @@ def list_companies():
             f"<form method='post' action='/companies/{html.escape(r.get('id',''))}/delete' style='display:inline' onsubmit='return confirmDelete()'>"
             "<button class='btn danger' type='submit'>Delete</button></form>"
         )
-        data_cells = [r.get("id", ""), r.get("name", ""), r.get("ticker", ""), r.get("chainIds", ""), r.get("voucherTypes", ""), r.get("notes", "")]
+        data_cells = [
+            r.get("id", ""),
+            r.get("name", ""),
+            r.get("ticker", ""),
+            r.get("chainIds", ""),
+            r.get("voucherTypes", ""),
+            r.get("notes", ""),
+            r.get("url", ""),
+        ]
         encoded = quote(actions, safe='')
         tds = "".join(f"<td>{html.escape(c)}</td>" for c in data_cells) + f"<td data-raw='{encoded}'></td>"
         trs.append(f"<tr>{tds}</tr>")
@@ -186,7 +194,11 @@ def companies_auto_import_commit():
         existing_ids.add(cid)
         existing_tickers.add(ticker)
         added += 1
-    write_csv(DATA / "companies.csv", existing, ["id", "name", "ticker", "chainIds", "voucherTypes", "notes"])
+    write_csv(
+        DATA / "companies.csv",
+        existing,
+        ["id", "name", "ticker", "chainIds", "voucherTypes", "notes", "url"],
+    )
     body = (
         "<div class='panel'>"
         f"<p>Imported <b>{added}</b> companies.</p>"
@@ -356,7 +368,11 @@ def companies_jquants_commit():
         existing_ids.add(cid)
         existing_tickers.add(ticker)
         added += 1
-    write_csv(DATA / "companies.csv", existing, ["id", "name", "ticker", "chainIds", "voucherTypes", "notes"])
+    write_csv(
+        DATA / "companies.csv",
+        existing,
+        ["id", "name", "ticker", "chainIds", "voucherTypes", "notes", "url"],
+    )
     body = (
         "<div class='panel'>"
         f"<p>Imported <b>{added}</b> companies from J-Quants.</p>"
@@ -381,6 +397,7 @@ def new_company():
         "<div class='row'>Ticker<br><input name='ticker' placeholder='(optional)'></div>"
         f"<div class='row'>Voucher Types<br>{opts}</div>"
         "<div class='row'>Notes<br><input name='notes' placeholder='(optional)'></div>"
+        "<div class='row'>URL<br><input name='url' placeholder='https://... (optional)'></div>"
         "<div class='actions'><button class='btn' type='submit'>Add</button> <a class='btn secondary' href='/companies'>Cancel</a></div>"
         "</form></div>"
     )
@@ -394,6 +411,7 @@ def create_company():
     ticker = request.form.get("ticker", "").strip()
     vts = request.form.getlist("voucherTypes")
     notes = request.form.get("notes", "").strip()
+    url_val = request.form.get("url", "").strip()
     if not vid or not name:
         return page("Error", "<div class='panel'><p>Missing id or name</p></div>"), 400
     row = {
@@ -403,9 +421,14 @@ def create_company():
         "chainIds": "",
         "voucherTypes": ",".join(vts),
         "notes": notes,
+        "url": url_val,
     }
     try:
-        append_row_csv(DATA / "companies.csv", row, ["id", "name", "ticker", "chainIds", "voucherTypes", "notes"])
+        append_row_csv(
+            DATA / "companies.csv",
+            row,
+            ["id", "name", "ticker", "chainIds", "voucherTypes", "notes", "url"],
+        )
     except ValueError as e:
         return page("Error", f"<div class='panel'><p>{html.escape(str(e))}</p></div>"), 400
     return redirect(url_for("companies.list_companies"))
@@ -430,6 +453,7 @@ def edit_company(vid: str):
         f"<div class='row'>Ticker<br><input name='ticker' value='{html.escape(rec.get('ticker',''))}'></div>"
         f"<div class='row'>Voucher Types<br>{opts}</div>"
         f"<div class='row'>Notes<br><input name='notes' value='{html.escape(rec.get('notes',''))}'></div>"
+        f"<div class='row'>URL<br><input name='url' value='{html.escape(rec.get('url',''))}' placeholder='https://... (optional)'></div>"
         "<div class='help'>chainIds はビルドで自動付与されます（編集不要）。</div>"
         "<div class='actions'><button class='btn' type='submit'>Save</button> <a class='btn secondary' href='/companies'>Cancel</a></div>"
         "</form></div>"
@@ -443,6 +467,7 @@ def update_company(vid: str):
     ticker = request.form.get("ticker", "").strip()
     vts = request.form.getlist("voucherTypes")
     notes = request.form.get("notes", "").strip()
+    url_val = request.form.get("url", "").strip()
     if not name:
         return page("Error", "<div class='panel'><p>Missing name</p></div>"), 400
     ok = update_row_csv(
@@ -453,8 +478,9 @@ def update_company(vid: str):
             "ticker": ticker,
             "voucherTypes": ",".join(vts),
             "notes": notes,
+            "url": url_val,
         },
-        ["id", "name", "ticker", "chainIds", "voucherTypes", "notes"],
+        ["id", "name", "ticker", "chainIds", "voucherTypes", "notes", "url"],
     )
     if not ok:
         return page("Not Found", f"<p class='panel'>Company not found: {html.escape(vid)}</p>"), 404
@@ -468,7 +494,11 @@ def delete_company(vid: str):
     if refs:
         msg = "この会社はチェーンから参照されています。先に chains.csv の companyIds から外してください。"
         return page("Blocked", f"<div class='panel'><p>{html.escape(msg)}</p><p><a class='btn secondary' href='/companies'>Back</a></p></div>"), 400
-    ok = delete_row_csv(DATA / "companies.csv", vid, ["id", "name", "ticker", "chainIds", "voucherTypes", "notes"])
+    ok = delete_row_csv(
+        DATA / "companies.csv",
+        vid,
+        ["id", "name", "ticker", "chainIds", "voucherTypes", "notes", "url"],
+    )
     if not ok:
         return page("Not Found", f"<div class='panel'><p>Company not found: {html.escape(vid)}</p></div>"), 404
     return redirect(url_for("companies.list_companies"))

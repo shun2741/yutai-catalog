@@ -33,6 +33,7 @@ Pydanticモデルは `src/pipeline/models.py` に定義。CSVカラムは以下�
 - chainIds: 編集時は空でよい（ビルド時に chains.csv から自動付与）
 - voucherTypes: 優待カテゴリ配列（カンマ区切り）
 - notes: 任意メモ
+- url: 公式URL（任意）
 
 ポイント:
 

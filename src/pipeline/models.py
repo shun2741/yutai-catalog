@@ -10,6 +10,7 @@ class Company(BaseModel):
     chainIds: List[str] = Field(default_factory=list)
     voucherTypes: List[str] = Field(default_factory=list)
     notes: Optional[str] = None
+    url: Optional[str] = None
 
 
 class Chain(BaseModel):
@@ -38,4 +39,3 @@ class Catalog(BaseModel):
     companies: List[Company]
     chains: List[Chain]
     stores: List[Store]
-
