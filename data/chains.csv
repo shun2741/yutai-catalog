@@ -10,3 +10,18 @@ chain-azul,AZUL,その他,comp-baroque-global,買い物,ファッション,
 chain-sheltter,SHEL'TTER,その他,comp-baroque-global,買い物,ファッション,
 chain-biccamera,ビックカメラ,その他,"comp-kojima,comp-biccamera",買い物,家電,https://www.biccamera.com/bc/i/shop/shoplist/index.jsp
 chain-kojima,コジマ,買い物,"comp-kojima,comp-biccamera",,家電,
+chain-ippudo,一風堂,飲食,comp-chikaranomoto,,ラーメン,https://stores.ippudo.com/search
+chain-tetsu102,つけめんTETSU,飲食,comp-createrestaurants,食事,ラーメン,https://www.tetsu102.com/
+chain-toriyoshishoten,鳥良商店,飲食,"comp-createrestaurants,comp-sfp",食事,居酒屋,https://toriyoshishoten.jp/
+chain-kagonoya,かごの屋,飲食,comp-createrestaurants,食事,和食,https://kagonoya.food-kr.com/
+chain-shabu-sai,しゃぶ菜,飲食,comp-createrestaurants,食事,しゃぶしゃぶ,https://shabu-sai.com/
+chain-saint-germain,サンジェルマン,飲食,comp-createrestaurants,食事,パン屋,https://www.saint-germain.co.jp/
+chain-dessert-oukoku,デザート王国,飲食,comp-createrestaurants,食事,スイーツ,https://dessert-oukoku.com/
+chain-lairbon,レフボン,飲食,comp-createrestaurants,食事,パン屋,https://www.lairbon.co.jp/
+chain-icho,いっちょう,飲食,comp-createrestaurants,食事,和食,https://www.icho.co.jp/
+chain-azusacoffee,あずさ珈琲,飲食,comp-createrestaurants,食事,カフェ,https://azusacoffee.food-kr.com/
+chain-yuzuru,ごまそば遊鶴,飲食,comp-createrestaurants,食事,そば,https://www.yuzuru.hokkaido.jp/
+chain-maccha-house,抹茶館,飲食,comp-createrestaurants,食事,スイーツ,https://maccha-house.com/
+chain-yasaiya-mei,やさい家めい,飲食,comp-createrestaurants,食事,野菜,https://yasaiya-mei.com/
+chain-bread-jeanfrancois,JEAN FRANCOIS,飲食,comp-createrestaurants,食事,パン屋,https://bread-jeanfrancois.com/
+chain-aw-kitchen,AWkitchen,飲食,,食事,イタリアン,https://aw-kitchen.com/
