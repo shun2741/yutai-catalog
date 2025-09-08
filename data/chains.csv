@@ -9,8 +9,8 @@ chain-moussy,MOUSSY,その他,comp-baroque-global,買い物,ファッション,
 chain-azul,AZUL,その他,comp-baroque-global,買い物,ファッション,
 chain-sheltter,SHEL'TTER,その他,comp-baroque-global,買い物,ファッション,
 chain-biccamera,ビックカメラ,その他,"comp-kojima,comp-biccamera",買い物,家電,https://www.biccamera.com/bc/i/shop/shoplist/index.jsp
-chain-kojima,コジマ,買い物,"comp-kojima,comp-biccamera",,家電,
-chain-ippudo,一風堂,飲食,comp-chikaranomoto,,ラーメン,https://stores.ippudo.com/search
+chain-kojima,コジマ,買い物,"comp-kojima,comp-biccamera",買い物,家電,
+chain-ippudo,一風堂,飲食,comp-chikaranomoto,食事,ラーメン,https://stores.ippudo.com/search
 chain-tetsu102,つけめんTETSU,飲食,comp-createrestaurants,食事,ラーメン,https://www.tetsu102.com/
 chain-toriyoshishoten,鳥良商店,飲食,"comp-createrestaurants,comp-sfp",食事,居酒屋,https://toriyoshishoten.jp/
 chain-kagonoya,かごの屋,飲食,comp-createrestaurants,食事,和食,https://kagonoya.food-kr.com/
@@ -24,4 +24,44 @@ chain-yuzuru,ごまそば遊鶴,飲食,comp-createrestaurants,食事,そば,http
 chain-maccha-house,抹茶館,飲食,comp-createrestaurants,食事,スイーツ,https://maccha-house.com/
 chain-yasaiya-mei,やさい家めい,飲食,comp-createrestaurants,食事,野菜,https://yasaiya-mei.com/
 chain-bread-jeanfrancois,JEAN FRANCOIS,飲食,comp-createrestaurants,食事,パン屋,https://bread-jeanfrancois.com/
-chain-aw-kitchen,AWkitchen,飲食,,食事,イタリアン,https://aw-kitchen.com/
+chain-aw-kitchen,AWkitchen,飲食,comp-createrestaurants,食事,イタリアン,https://aw-kitchen.com/
+chain-mr-farmer,Mr.FARMER,飲食,comp-createrestaurants,食事,野菜,https://mr-farmer.jp/
+chain-tanto-tanto,TANTO TANTO,飲食,comp-createrestaurants,食事,イタリアン,https://tanto-tanto.com/
+chain-hina-sushi,雛鮨,飲食,comp-createrestaurants,食事,寿司,https://hina-sushi.com/
+chain-ginza-kiya,銀座木屋,飲食,comp-createrestaurants,食事,うどん,https://ginza-kiya.com/
+chain-karacen,からあげセンター,飲食,comp-createrestaurants,食事,からあげ,https://karacen.com/
+chain-maekawa-suigun,前川水軍,飲食,comp-createrestaurants,食事,居酒屋,https://www.johsmile.co.jp/storeguide/maekawa-suigun/
+chain-riogrande,RIO GRANDE GRILL,飲食,comp-createrestaurants,食事,シュラスコ,https://riogrande.createrestaurants.com/
+chain-yakiniku-yorozuya,焼肉 萬家,飲食,comp-createrestaurants,食事,焼肉,https://yakiniku-yorozuya.com/
+chain-route9g,海南鶏飯食堂,飲食,comp-createrestaurants,食事,エスニック,https://route9g.com/
+chain-nansho-mantouten,南翔饅頭店,飲食,comp-createrestaurants,食事,中華,https://nansho-mantouten.createrestaurants.com/jp/index.html
+chain-mortons-jp,Morton’s,飲食,comp-createrestaurants,食事,レストラン,https://mortons-jp.com/
+chain-ebisoba,えびそば 一幻,飲食,comp-createrestaurants,食事,ラーメン,https://www.ebisoba.com/
+chain-big-echo,ビッグエコー,飲食,comp-dkkaraoke,レジャー,カラオケ,https://big-echo.jp/shop_search/
+chain-megakara,カラオケ メガビッグ,飲食,comp-dkkaraoke,レジャー,カラオケ,https://megakara.jp/shop/
+chain-karaokeclub,カラオケＣＬＵＢ ＤＡＭ,飲食,comp-dkkaraoke,レジャー,カラオケ,https://karaokeclub.jp/shop/
+chain-karaokemac,カラオケ マック,飲食,comp-dkkaraoke,レジャー,カラオケ,https://www.karaokemac.com/reserve.html
+chain-misterdonut,ミスタードーナツ,飲食,comp-createrestaurants,食事,,https://www.misterdonut.jp/
+chain-edion,エディオン,買い物,comp-edion,買い物,家電,https://search.edion.com/e_store/
+chain-kg2,らあめん花月嵐,飲食,comp-fullcastholdings,食事,ラーメン,https://kg2.jp/
+chain-ichikakuya,壱角家,飲食,comp-gardengroup,食事,ラーメン,https://gardengroup.co.jp/brand/ichikakuya/
+chain-yamashita-honki-udon,山下本気うどん,飲食,comp-gardengroup,食事,うどん,https://yamashita-honki-udon.com/shopinfo/
+chain-machidashoten,町田商店,飲食,comp-gift-group,食事,ラーメン,https://shop.machidashoten.com/
+chain-butayama,豚山,飲食,comp-gift-group,食事,ラーメン,https://shop.butayama.com/
+chain-ganso-aburado,元祖油堂,飲食,comp-gift-group,食事,ラーメン,https://shop.ganso-aburado.com/japan/
+chain-kamataki,がっとん,飲食,comp-gift-group,,ラーメン,https://shop.gift-group.co.jp/kamataki/
+chain-nagaokashokudou,長岡食堂,飲食,comp-gift-group,食事,ラーメン,https://shop.gift-group.co.jp/nagaokashokudou/
+chain-shitennoh,四天王,飲食,comp-gift-group,食事,ラーメン,https://shop.gift-group.co.jp/shitennoh/
+chain-akamisoya,赤みそ家,飲食,comp-gift-group,食事,ラーメン,https://shop.gift-group.co.jp/akamisoya/
+chain-gokurakuyu,極楽湯,飲食,comp-gokurakuyu-holdings,レジャー,スーパー銭湯,https://www.gokurakuyu.ne.jp/tempo/
+chain-enospa,江ノ島アイランドスパ,その他,comp-ighd,レジャー,リゾート,https://www.enospa.jp/
+chain-mcdonalds,マクドナルド,飲食,comp-mcd-holdings,食事,ハンバーガー,https://map.mcdonalds.co.jp/
+chain-dandadan,肉汁餃子のダンダダン,飲食,comp-nattyswanky,食事,餃子,https://www.dandadan.jp/shop/
+chain-donki,ドン・キホーテ,買い物,comp-ppih,買い物,雑貨,https://www.donki.com/store/shop_list.php?bsns=1&pref=15
+chain-kizunasushi,きづなすし,飲食,"comp-createrestaurants,comp-sfp",食事,寿司,https://sfpdining.jp/brand/kizunasushi/
+chain-toriyoshi,おもてなしとりよし,飲食,"comp-createrestaurants,comp-sfp",食事,居酒屋,https://toriyoshi.jp/
+chain-bamiyan,バーミヤン,飲食,comp-skylark,食事,中華,https://store-info.skylark.co.jp/bamiyan/
+chain-gusto,ガスト,飲食,comp-skylark,食事,ファミレス,https://store-info.skylark.co.jp/gusto/
+chain-supersports,ゼビオ,買い物,comp-xebio,買い物,スポーツ,https://store.supersports.com/directory
+chain-yamada-denki,ヤマダ電機,飲食,comp-yamada-holdings,買い物,家電,https://www.yamada-denki.jp/store/
+chain-pizzahut,ピザハット,飲食,comp-yamaegroup-hd,,ピザ,https://www.pizzahut.jp/topic/store
