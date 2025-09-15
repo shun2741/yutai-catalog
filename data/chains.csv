@@ -143,6 +143,31 @@ chain-home-base,大衆酒場 ホームベース,飲食,comp-sfp,食事,居酒屋
 chain-gonogo,大衆酒場 五の五,飲食,comp-sfp,食事,居酒屋,https://sfpdining.jp/search/
 chain-torihei-chan,鳥平ちゃん,飲食,comp-sfp,食事,居酒屋,https://sfpdining.jp/search/
 chain-torozaku,町鮨 とろたく,飲食,comp-sfp,食事,寿司,https://sfpdining.jp/search/
+chain-umeko,花咲酒蔵 ウメ子の家,飲食,comp-dkkaraoke,食事,居酒屋,https://dkdining.com/shop/umeko/
+chain-rakuzo,楽蔵,飲食,comp-dkkaraoke,食事,居酒屋,https://dkdining.com/shop/rakuzo/
+chain-bistroya,びすとろ家,飲食,comp-dkkaraoke,食事,ビストロ,https://dkdining.com/shop/bistro/
+chain-seseragi,せせらぎを聴きながら,飲食,comp-dkkaraoke,食事,和食,https://dkdining.com/shop/seseragi/
+chain-kyomachi,京町しずく,飲食,comp-dkkaraoke,食事,居酒屋,https://dkdining.com/shop/kyomachi/
+chain-senya-ichiya,鮮や一夜,飲食,comp-dkkaraoke,食事,居酒屋,https://dkdining.com/shop/senyaichiya/
+chain-minato-ichiya,湊一や,飲食,comp-dkkaraoke,食事,海鮮,https://dkdining.com/shop/minatoichiya/
+chain-tokachi-ishikari-hakodate,北海道の恵み 十勝石狩函館,飲食,comp-dkkaraoke,食事,海鮮,https://dkdining.com/shop/tokachiishikarihakodate/
+chain-celts,CELTS,飲食,comp-dkkaraoke,食事,パブ,https://dkdining.com/shop/celts/
+chain-mochinoki-pasta,もちの木パスタ,飲食,comp-dkkaraoke,食事,パスタ,https://dkdining.com/shop/mochinoki/
+chain-darts-one,ダーツワン,飲食,comp-dkkaraoke,レジャー,ダーツ,https://dkdining.com/shop/darts-one/
+chain-forest-diner,FOREST DINER,飲食,comp-dkkaraoke,食事,ダイナー,https://dkdining.com/shop/forestdiner/
+chain-totouo,ととうお,飲食,comp-dkkaraoke,食事,海鮮,https://dkdining.com/shop/totouo/
+chain-atarayo,あたらよ,飲食,comp-dkkaraoke,食事,居酒屋,https://dkdining.com/shop/atarayo/
+chain-highball-bar,HIGHBALL BAR,飲食,comp-dkkaraoke,食事,バー,https://dkdining.com/shop/highballbar/
+chain-ginza-coffee,銀座珈琲店,飲食,comp-dkkaraoke,食事,カフェ,https://dkdining.com/shop/coffee/
+chain-time-is-curry,Time is Curry,飲食,comp-dkkaraoke,食事,カレー,https://dkdining.com/shop/curry/
+chain-kurakura,くらくら,飲食,comp-dkkaraoke,食事,居酒屋,https://dkdining.com/shop/kurakura/
+chain-matsuri-sakaba,祭酒場,飲食,comp-dkkaraoke,食事,居酒屋,https://dkdining.com/shop/matsurisakaba/
+chain-hare-no-hi,鮨やハレの日,飲食,comp-dkkaraoke,食事,寿司,https://dkdining.com/shop/harenohi/
+chain-amatsu,大衆食堂 あまつ,飲食,comp-dkkaraoke,食事,食堂,https://dkdining.com/shop/amatsu/
+chain-ichidan,いちだん,飲食,comp-dkkaraoke,食事,うどん,https://dkdining.com/shop/ichidan/
+chain-ginten,ぎん天,飲食,comp-dkkaraoke,食事,天ぷら,https://dkdining.com/shop/ginten/
+chain-marunouchi-base,丸の内ベース,飲食,comp-dkkaraoke,レジャー,ダーツ,https://dkdining.com/shop/marunouchibase/
+chain-regalo,REGALO,飲食,comp-dkkaraoke,食事,バル,https://regalo.dkdining.com/
 chain-sly,SLY,その他,comp-baroque-global,買い物,ファッション,https://www.baroque-global.com/jp/shoplist
 chain-rienda,rienda,その他,comp-baroque-global,買い物,ファッション,https://www.baroque-global.com/jp/shoplist
 chain-rodeo-crowns-wide-bowl,RODEO CROWNS WIDE BOWL,その他,comp-baroque-global,買い物,ファッション,https://www.baroque-global.com/jp/shoplist
