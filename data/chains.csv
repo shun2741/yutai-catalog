@@ -60,8 +60,86 @@ chain-dandadan,肉汁餃子のダンダダン,飲食,comp-nattyswanky,食事,餃
 chain-donki,ドン・キホーテ,買い物,comp-ppih,買い物,雑貨,https://www.donki.com/store/shop_list.php?bsns=1&pref=15
 chain-kizunasushi,きづなすし,飲食,"comp-createrestaurants,comp-sfp",食事,寿司,https://sfpdining.jp/brand/kizunasushi/
 chain-toriyoshi,おもてなしとりよし,飲食,"comp-createrestaurants,comp-sfp",食事,居酒屋,https://toriyoshi.jp/
-chain-bamiyan,バーミヤン,飲食,comp-skylark,食事,中華,https://store-info.skylark.co.jp/bamiyan/
-chain-gusto,ガスト,飲食,comp-skylark,食事,ファミレス,https://store-info.skylark.co.jp/gusto/
 chain-supersports,ゼビオ,買い物,comp-xebio,買い物,スポーツ,https://store.supersports.com/directory
 chain-yamada-denki,ヤマダ電機,飲食,comp-yamada-holdings,買い物,家電,https://www.yamada-denki.jp/store/
 chain-pizzahut,ピザハット,飲食,comp-yamaegroup-hd,,ピザ,https://www.pizzahut.jp/topic/store
+chain-gusto,ガスト,飲食,comp-skylark,食事,ファミレス,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-bamiyan,バーミヤン,飲食,comp-skylark,食事,中華,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-shabuyo,しゃぶ葉,飲食,comp-skylark,食事,しゃぶしゃぶ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-yumean,夢庵,飲食,comp-skylark,食事,ファミレス,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-jonathan,ジョナサン,飲食,comp-skylark,食事,ファミレス,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-steak-gusto,ステーキガスト,飲食,comp-skylark,食事,ステーキ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-musashinomori-coffee,むさしの森珈琲,飲食,comp-skylark,食事,カフェ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-karayoshi,から好し,飲食,comp-skylark,食事,からあげ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-aiya,藍屋,飲食,comp-skylark,食事,ファミレス,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-tonkaratei,とんから亭,飲食,comp-skylark,食事,からあげ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-chawan,chawan,飲食,comp-skylark,食事,ファミレス,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-la-ohana,La Ohana,飲食,comp-skylark,食事,レストラン,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-uoyamichi,魚屋路,飲食,comp-skylark,食事,寿司,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-momona,桃菜,飲食,comp-skylark,食事,スイーツ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-gracche-gardens,グラッチェガーデンズ,飲食,comp-skylark,食事,イタリアン,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-tenshin-tenshin,點心甜心,飲食,comp-skylark,食事,中華,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-hachiro-soba,八郎そば,飲食,comp-skylark,食事,そば,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-yumean-shokudo,ゆめあん食堂,飲食,comp-skylark,食事,ファミレス,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-sansan,三〇三,飲食,comp-skylark,食事,ファミレス,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-gran-buffet,グランブッフェ,飲食,comp-skylark,食事,ビュッフェ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-newmarket,ニューマーケット,飲食,comp-skylark,食事,ビュッフェ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-festa-garden,フェスタガーデン,飲食,comp-skylark,食事,ビュッフェ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-forest,フォレスト,飲食,comp-skylark,食事,ビュッフェ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-pao-pao,包包點心,飲食,comp-skylark,食事,中華,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-diner,ダイナー,飲食,comp-skylark,食事,ビュッフェ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-the-buffet-sapporo,ザ ブッフェ 札幌大丸,飲食,comp-skylark,食事,ビュッフェ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-hakken,八献,飲食,comp-skylark,食事,ビュッフェ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-kushiha,くし葉,飲食,comp-skylark,食事,串揚げ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-soup,すうぷ,飲食,comp-skylark,食事,しゃぶしゃぶ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-pertica,ペルティカ,飲食,comp-skylark,食事,イタリアン,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-tomato-onion,トマト＆オニオン,飲食,comp-skylark,食事,ファミレス,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-jujucalbi,じゅうじゅうカルビ,飲食,comp-skylark,食事,焼肉,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-froprest,フロプレステージュ,飲食,comp-skylark,食事,フレンチ,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-sukesan-udon,資さんうどん,飲食,comp-skylark,食事,うどん,https://corp.skylark.co.jp/ir/stock/incentive/
+chain-amatarao,甘太郎,飲食,comp-colowide,食事,居酒屋,https://www.colowide.co.jp/gs/
+chain-iroha,いろはにほへと,飲食,comp-colowide,食事,居酒屋,https://www.colowide.co.jp/gs/
+chain-hokkaido,北海道,飲食,comp-colowide,食事,居酒屋,https://www.colowide.co.jp/gs/
+chain-yakitori-center,やきとりセンター,飲食,comp-colowide,食事,焼き鳥,https://www.colowide.co.jp/gs/
+chain-sakaba-yakisen,酒場ヤキセン,飲食,comp-colowide,食事,居酒屋,https://www.colowide.co.jp/gs/
+chain-hiikiya,贔屓屋,飲食,comp-colowide,食事,居酒屋,https://www.colowide.co.jp/gs/
+chain-wolfgang-puck,ウルフギャング･パック,飲食,comp-colowide,食事,洋食,https://www.colowide.co.jp/gs/
+chain-honobono-yokocho,ほのぼの横丁,飲食,comp-colowide,食事,居酒屋,https://www.colowide.co.jp/gs/
+chain-365sakaba,３･６･５酒場,飲食,comp-colowide,食事,居酒屋,https://www.colowide.co.jp/gs/
+chain-kiteki,KITEKI,飲食,comp-colowide,食事,ダイニング,https://www.colowide.co.jp/gs/
+chain-pinsakaba,寿司と肴 ぴん酒場,飲食,comp-colowide,食事,居酒屋,https://www.colowide.co.jp/gs/
+chain-sakaba-torino,酒場トリノ,飲食,comp-colowide,食事,居酒屋,https://www.colowide.co.jp/gs/
+chain-nigiri-toku,にぎりの徳兵衛,飲食,comp-colowide,食事,寿司,https://www.colowide.co.jp/gs/
+chain-neneya,寧々家,飲食,comp-colowide,食事,居酒屋,https://www.colowide.co.jp/gs/
+chain-karubi-taisho,カルビ大将,飲食,comp-colowide,食事,焼肉,https://www.colowide.co.jp/gs/
+chain-ganko-tei,がんこ亭,飲食,comp-colowide,食事,焼肉,https://www.colowide.co.jp/gs/
+chain-katsutoki,かつ時,飲食,comp-colowide,食事,とんかつ,https://www.colowide.co.jp/gs/
+chain-umie,海へ,飲食,comp-colowide,食事,居酒屋,https://www.colowide.co.jp/gs/
+chain-dan-ya,暖や,飲食,comp-colowide,食事,居酒屋,https://www.colowide.co.jp/gs/
+chain-kaisen-atom,海鮮アトム,飲食,comp-colowide,食事,寿司,https://www.colowide.co.jp/gs/
+chain-torinokura,鳥の蔵,飲食,comp-colowide,食事,焼き鳥,https://www.colowide.co.jp/gs/
+chain-sakura-nasu,和牛ステーキ桜 那須高原店,飲食,comp-colowide,食事,ステーキ,https://www.colowide.co.jp/gs/
+chain-chiisana-mori,小さな森珈琲,飲食,comp-colowide,食事,カフェ,https://www.colowide.co.jp/gs/
+chain-cantina,CANTINA,飲食,comp-colowide,食事,イタリアン,https://www.colowide.co.jp/gs/
+chain-nagisabashi,なぎさ橋珈琲,飲食,comp-colowide,食事,カフェ,https://www.colowide.co.jp/gs/
+chain-miya-cafe,カフェ&ビヤレストラン 宮,飲食,comp-colowide,食事,カフェ,https://www.colowide.co.jp/gs/
+chain-jingisukan,ジンギスカン羊々亭,飲食,comp-colowide,食事,ジンギスカン,https://www.colowide.co.jp/gs/
+chain-asahi-beer,アサヒビール園はまなす館,飲食,comp-colowide,食事,レストラン,https://www.colowide.co.jp/gs/
+chain-flamme-dor,フラムドール,飲食,comp-colowide,食事,居酒屋,https://www.colowide.co.jp/gs/
+chain-lalanarita,ラ・ラナリータ,飲食,comp-colowide,食事,イタリアン,https://www.colowide.co.jp/gs/
+chain-skyroom,スカイルーム,飲食,comp-colowide,食事,カフェ,https://www.colowide.co.jp/gs/
+chain-sumidagawa,隅田川ブルーイング,飲食,comp-colowide,食事,バル,https://www.colowide.co.jp/gs/
+chain-bar-style,バルstyle,飲食,comp-colowide,食事,バル,https://www.colowide.co.jp/gs/
+chain-beer-spice,Beer&Spice,飲食,comp-colowide,食事,ビアダイニング,https://www.colowide.co.jp/gs/
+chain-beer-thirty,Beer Thirty,飲食,comp-colowide,食事,ビアダイニング,https://www.colowide.co.jp/gs/
+chain-choyokaku,朝陽閣,飲食,comp-colowide,食事,中華,https://www.colowide.co.jp/gs/
+chain-bw-station,BW STATION,飲食,comp-colowide,食事,カフェ,https://www.colowide.co.jp/gs/
+chain-teppan-200,鉄板二百℃,飲食,comp-sfp,食事,鉄板焼,https://sfpdining.jp/search/
+chain-ichi-goro,いち五郎,飲食,comp-sfp,食事,餃子,https://sfpdining.jp/search/
+chain-tamagawa-soba,生そば玉川,飲食,comp-sfp,食事,そば,https://sfpdining.jp/search/
+chain-bistro-isomaru,ビストロISOMARU,飲食,comp-sfp,食事,ビストロ,https://sfpdining.jp/search/
+chain-tamacho-honten,玉丁本店,飲食,comp-sfp,食事,うどん,https://sfpdining.jp/search/
+chain-home-base,大衆酒場 ホームベース,飲食,comp-sfp,食事,居酒屋,https://sfpdining.jp/search/
+chain-gonogo,大衆酒場 五の五,飲食,comp-sfp,食事,居酒屋,https://sfpdining.jp/search/
+chain-torihei-chan,鳥平ちゃん,飲食,comp-sfp,食事,居酒屋,https://sfpdining.jp/search/
+chain-torozaku,町鮨 とろたく,飲食,comp-sfp,食事,寿司,https://sfpdining.jp/search/
